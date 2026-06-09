@@ -1,0 +1,5 @@
+[
+  { "id": "sim_01", "name": "iRacing", "developer": "iRacing.com", "logo": "img/iRacing-Inline-Color-Blue.png", "telemetry_features": { "frequency_hz": 60 }, "is_active_broadcasting": true },
+  { "id": "sim_02", "name": "rFactor 2", "developer": "Studio 397", "logo": "img/rFactor2-Logo.png", "telemetry_features": { "frequency_hz": 100 }, "is_active_broadcasting": false },
+  { "id": "sim_03", "name": "Assetto Corsa Competizione", "developer": "Kunos Simulazioni", "logo": "img/Assetto-Corsa-Competizione-Logo.png", "telemetry_features": { "frequency_hz": 400 }, "is_active_broadcasting": true }
+]

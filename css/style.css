@@ -1,0 +1,8 @@
+.code-container { 
+    background-color: #05070a; 
+    font-family: monospace; 
+}
+
+.rpm-ring { 
+    transition: stroke 0.2s ease; 
+}
