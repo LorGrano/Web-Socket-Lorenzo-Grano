@@ -252,7 +252,7 @@ socket.on("telemetry_update", (data) => { console.log("Dati:", data); });</pre>
                                       :class="sim.is_active_broadcasting ? 'text-green-400 border-green-500/30 bg-green-500/5' : 'text-gray-500 border-gray-800 bg-gray-800/10'">
                                     {{ sim.is_active_broadcasting ? 'Live' : 'Offline' }}
                                 </span>
-                            </div>
+                            </div>Live
                             <div class="text-sm text-gray-400 flex flex-col gap-1.5 pl-1.5 border-l-2 border-gray-800 my-4">
                                 <div>Sviluppatore: <span class="text-gray-200 font-bold ml-1">{{ sim.developer }}</span></div>
                                 <div>Frequenza: <span class="text-neonBlue font-black font-mono ml-1 text-base">{{ sim.telemetry_features.frequency_hz }} Hz</span></div>
@@ -318,7 +318,7 @@ socket.on("telemetry_update", (data) => { console.log("Dati:", data); });</pre>
                             <div class="flex justify-between items-center border-b border-gray-800/60 pb-2">
                                 <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" :class="isBooting ? 'text-yellow-400 animate-pulse' : 'text-neonBlue'">
                                     <span class="w-2 h-2 rounded-full" :class="isBooting ? 'bg-yellow-400' : 'bg-green-400 animate-pulse'"></span>
-                                    {{ isBooting ? 'SYSTEM CHECK RUNNING...' : 'TELEMETRY FEED OK (60Hz)' }}
+                                    {{ isBooting ? 'SYSTEM CHECK RUNNING...' : 'ANALISI DATI TELEMETRIA CIRCUITO' }}
                                 </span>
                                 <span class="text-[11px] font-mono font-bold text-neonCyan uppercase bg-neonCyan/10 px-2 py-0.5 rounded border border-neonCyan/20">Imola GP</span>
                             </div>
@@ -361,6 +361,7 @@ socket.on("telemetry_update", (data) => { console.log("Dati:", data); });</pre>
                         <div class="flex flex-col gap-4">
                             <h2 class="text-3xl font-black text-white tracking-tight uppercase">Note Esistenti</h2>
                             <div v-for="nota in note" :key="nota.id" class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-4 transition hover:border-gray-700 shadow-xl">
+                                
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <div class="flex items-center gap-2">
@@ -373,21 +374,18 @@ socket.on("telemetry_update", (data) => { console.log("Dati:", data); });</pre>
                                             Lap Time: <span class="text-neonCyan font-mono font-black text-sm">{{ nota.tempoGiro }}</span>
                                         </div>
                                     </div>
-                                    <span class="text-[10px] font-mono bg-gray-900 border border-gray-800 text-gray-500 px-2.5 py-1 rounded-full uppercase tracking-wider font-black shadow-inner">Read-Ok</span>
+                                    
+                                    <span class="text-[10px] font-mono bg-green-500/5 border border-green-500/30 text-green-400 px-2.5 py-1 rounded-full uppercase tracking-wider font-black shadow-inner flex-shrink-0 mt-[8px] md:mt-[0px]">READ</span>                                </div>
+                                
+                                        <p class="text-base text-gray-300 bg-black/25 p-4 rounded-xl border border-gray-900/40 leading-relaxed pl-4 border-l-4 border-l-neonCyan italic font-medium">
+                                            "{{ nota.note }}"
+                                        </p>
+                                        <div class="flex justify-end gap-2 text-xs font-black uppercase mt-1">
+                                            <button @click="avviaModifica(nota)" class="px-4 py-2 bg-gray-800/80 text-gray-200 rounded-lg hover:text-neonCyan border border-gray-700 transition shadow-md">Modifica</button>
+                                            <button @click="eliminaNota(nota.id)" class="px-4 py-2 bg-red-950/20 text-red-400 border border-red-900/30 rounded-lg hover:bg-red-900/40 transition shadow-md">Elimina</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="text-base text-gray-300 bg-black/25 p-4 rounded-xl border border-gray-900/40 leading-relaxed pl-4 border-l-4 border-l-neonCyan italic font-medium">
-                                    "{{ nota.note }}"
-                                </p>
-                                <div class="flex justify-end gap-2 text-xs font-black uppercase mt-1">
-                                    <button @click="avviaModifica(nota)" class="px-4 py-2 bg-gray-800/80 text-gray-200 rounded-lg hover:text-neonCyan border border-gray-700 transition shadow-md">Modifica</button>
-                                    <button @click="eliminaNota(nota.id)" class="px-4 py-2 bg-red-950/20 text-red-400 border border-red-900/30 rounded-lg hover:bg-red-900/40 transition shadow-md">Elimina</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
         </main>
     </div>
 
