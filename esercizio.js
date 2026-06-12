@@ -1,4 +1,3 @@
-// Estrazione dei metodi reattivi dall'oggetto globale di Vue
 const { ref, onMounted, onUnmounted, watch } = Vue;
 
 const appLogic = {
@@ -6,7 +5,6 @@ const appLogic = {
         const currentView = ref('statica1');
         const isMenuOpen = ref(false);
 
-        // Mappatura esatta basata sui file presenti nella tua cartella img/
         const simulatori = ref([
             { "id": "sim_01", "name": "iRacing", "developer": "iRacing.com", "logo": "img/iRacing_logo.png", "telemetry_features": { "frequency_hz": 60 }, "is_active_broadcasting": true },
             { "id": "sim_02", "name": "rFactor 2", "developer": "Studio 397", "logo": "img/RFactor2_Logo.png", "telemetry_features": { "frequency_hz": 100 }, "is_active_broadcasting": false },
@@ -68,15 +66,31 @@ const appLogic = {
         };
 
         const salvaNota = () => {
-            if (!formNota.value.simulatore || !formNota.value.circuito || !formNota.value.auto || !formNota.value.tempoGiro || !formNota.value.note) return;
+            if (!formNota.value.simulatore || 
+                !formNota.value.circuito || 
+                !formNota.value.auto || 
+                !formNota.value.tempoGiro) {
+                
+                window.alert("Attenzione: valorizzare tutti i campi obbligatori prima di salvare!");
+                return;
+            }
+
             if (isEditing.value) {
                 const index = note.value.findIndex(n => n.id === formNota.value.id);
                 if (index !== -1) note.value[index] = { ...formNota.value };
                 isEditing.value = false;
             } else {
-                const nuovaNota = { id: Date.now(), simulatore: formNota.value.simulatore, circuito: formNota.value.circuito, auto: formNota.value.auto, tempoGiro: formNota.value.tempoGiro, note: formNota.value.note };
+                const nuovaNota = { 
+                    id: Date.now(), 
+                    simulatore: formNota.value.simulatore, 
+                    circuito: formNota.value.circuito, 
+                    auto: formNota.value.auto, 
+                    tempoGiro: formNota.value.tempoGiro,
+                    note: formNota.value.note
+                };
                 note.value.unshift(nuovaNota); 
             }
+            
             localStorage.setItem('sim_racing_notes', JSON.stringify(note.value));
             resetForm();
         };
