@@ -1,5 +1,62 @@
 [
-  { "id": "sim_01", "name": "iRacing", "developer": "iRacing.com", "logo": "img/iRacing-Inline-Color-Blue.png", "telemetry_features": { "frequency_hz": 60 }, "is_active_broadcasting": true },
-  { "id": "sim_02", "name": "rFactor 2", "developer": "Studio 397", "logo": "img/rFactor2-Logo.png", "telemetry_features": { "frequency_hz": 100 }, "is_active_broadcasting": false },
-  { "id": "sim_03", "name": "Assetto Corsa Competizione", "developer": "Kunos Simulazioni", "logo": "img/Assetto-Corsa-Competizione-Logo.png", "telemetry_features": { "frequency_hz": 400 }, "is_active_broadcasting": true }
+  {
+    "id": "sim_01",
+    "name": "iRacing",
+    "developer": "iRacing.com",
+    "logo": "img/iRacing_logo.png",
+    "is_active_broadcasting": true,
+    "frequency_hz": 60,
+    "packet_format": "Binary telemetry stream",
+    "channels_list": ["RPM", "Speed", "Gear", "Throttle", "Brake", "SteeringAngle"]
+  },
+  {
+    "id": "sim_02",
+    "name": "rFactor 2",
+    "developer": "Studio 397",
+    "logo": "img/RFactor2_Logo.png",
+    "is_active_broadcasting": false,
+    "frequency_hz": 100,
+    "packet_format": "Shared Memory Block",
+    "channels_list": ["RPM", "Speed", "Gear", "TyreTemp", "SuspensionTravel"]
+  },
+  {
+    "id": "sim_03",
+    "name": "Assetto Corsa Competizione",
+    "developer": "Kunos Simulazioni",
+    "logo": "img/ASC_Logo.png",
+    "is_active_broadcasting": true,
+    "frequency_hz": 400,
+    "packet_format": "UDP Broadcast Frame",
+    "channels_list": ["RPM", "Speed", "Gear", "TC_Level", "ABS_Level", "LapTime", "WaterTemp", "OilPressure"]
+  },
+  {
+    "id": "sim_04",
+    "name": "Automobilista 2",
+    "developer": "Reiza Studios",
+    "logo": "img/AMS2_Logo.png",
+    "is_active_broadcasting": false,
+    "frequency_hz": 50,
+    "packet_format": "Shared Memory Block",
+    "channels_list": ["RPM", "Speed", "Gear", "WaterTemp", "OilPressure", "GForce"]
+  },
+  {
+    "id": "sim_05",
+    "name": "F1 24 (Codemasters)",
+    "developer": "EA Sports",
+    "logo": "img/F124_Logo.png",
+    "is_active_broadcasting": true,
+    "frequency_hz": 60,
+    "packet_format": "UDP Socket Stream",
+    "channels_list": ["RPM", "Speed", "Gear", "ERS_Store", "DRS_Status", "FuelMix", "LapDistance"]
+  },
+  {
+    "id": "sim_06",
+    "name": "RaceRoom Racing",
+    "developer": "Sector3 Studios",
+    "logo": "img/RRE_Logo.png",
+    "is_active_broadcasting": false,
+    "frequency_hz": 40,
+    "packet_format": "Web API Endpoint",
+    "channels_list": ["RPM", "Speed", "Gear", "GForce", "LapTime"]
+  }
 ]
