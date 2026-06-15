@@ -6,7 +6,6 @@ const appLogic = {
         const currentView = ref('statica1');
         const isMenuOpen = ref(false);
 
-        // L'array viene popolato dinamicamente dal file unico esterno (simulatori.json)
         const simulatori = ref([]);
 
         // Dati CRUD per le note ingegneristiche
@@ -14,7 +13,7 @@ const appLogic = {
         const formNota = ref({ id: null, simulatore: '', circuito: '', auto: '', tempoGiro: '', note: '' });
         const isEditing = ref(false);
         
-        // Motore hardware di telemetria V-SYNC
+        // Motore hardware di telemetria
         const liveTelemetry = ref({ rpm: 0, speed: 0, n_gear: 1 });
         let animationFrameId = null;
         
@@ -44,7 +43,6 @@ const appLogic = {
         // PIPELINE ASINCRONA CON STRATEGIA DI CACHE BUSTING PER FORZARE XAMPP
         const recuperaDatiSimulatori = async () => {
             try {
-                // L'aggiunta di ?v=Date.now() costringe il browser a ignorare la vecchia cache
                 const response = await fetch(`simulatori.json?v=${Date.now()}`);
                 if (response.ok) {
                     simulatori.value = await response.json();
@@ -65,7 +63,7 @@ const appLogic = {
         };
 
         const salvaNota = () => {
-            if (!formNota.value.simulatore || !formNota.value.circuito || !formNota.value.auto || !formNota.value.tempoGiro || !formNota.value.note) {
+            if (!formNota.value.simulatore || !formNota.value.circuito || !formNota.value.auto || !formNota.value.tempoGiro) {
                 window.alert("Attenzione: valorizzare tutti i campi obbligatori prima di salvare!");
                 return;
             }

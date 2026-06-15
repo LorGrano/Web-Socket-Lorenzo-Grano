@@ -1,0 +1,25 @@
+L'idea del progetto nasce dall'esigenza di creare un "Live Hub" dedicato al mondo del motorsport digitale e della telemetria in tempo reale. Prima di scrivere anche una sola riga di codice, ho affrontato una fase di progettazione UX/UI focalizzandomi sullo studio di tre User Personas ben distinte, che rappresentano i target ideali del sito:
+
+Andrea, un appassionato di motorsport che vuole iniziare la sua carriera nel sim-racing. Usa l'Hub per esplorare le specifiche dei videogiochi più popolari sul mercato e valutare con quale software fare il suo debutto.
+
+Valentina, un'aspirante sviluppatrice web che deve affrontare un colloquio di lavoro. Sfrutta le sezioni teoriche dell'Hub per rinfrescare e approfondire le tecnologie contemporanee di connessione persistente e asincrona.
+
+Mark, Team Manager della scuderia IJTR Speedworks nei campionati Under 16. Utilizza la plancia per gestire i tempi dei suoi piloti tramite un diario CRUD, potendoli modificare in caso di penalità o eliminare se il tempo viene annullato o il pilota squalificato.
+
+Definiti i bisogni di Andrea, Valentina e Mark, ho disegnato i mockup interattivi su Figma, impostando lo stile visivo Sci-Fi/Cyberpunk in modalità scura e la disposizione degli elementi prima di passare allo sviluppo.
+
+Per lo sviluppo ho creato una Single Page Application (SPA) flessibile, appoggiandola su un server locale Apache tramite XAMPP per simulare un ambiente di produzione reale.
+
+La logica dell'applicazione gira interamente su Vue.js 3 (usando la Composition API), che gestisce i cambi di pagina e l'aggiornamento dei dati in modo istantaneo e reattivo. Per evitare di "cablare" i dati direttamente nel codice, ho strutturato un file esterno chiamato simulatori.json che fa da piccolo database per mappare le specifiche dei giochi (frequenze, canali e formati dei pacchetti). I dati vengono pescati all'avvio tramite una chiamata fetch asincrona.
+
+Durante i test ho riscontrato che la cache del browser memorizzava i vecchi dati ignorando le modifiche. Ho risolto implementando una logica di Cache Busting nel codice JavaScript, aggiungendo un timestamp dinamico all'URL della richiesta per forzare il browser a ricaricare sempre l'ultima versione pulita dal server. Infine, la persistenza delle note tecniche e dei tempi gestiti da Mark è affidata al LocalStorage, così da non perdere i dati anche ricaricando la pagina.
+
+Il passaggio dai mockup di Figma al codice HTML/CSS è stato un percorso di ottimizzazione visiva. Inizialmente l'interfaccia risultava troppo compressa al centro della pagina. Per sfruttare al meglio i monitor desktop, ho sbloccato la larghezza massima del contenitore portandola a max-w-7xl e organizzato la teoria su una griglia asimmetrica a due colonne (Split Layout), bilanciando spiegazioni e box di codice. Per la responsività su smartphone, ho applicato un controllo mirato sull'overflow orizzontale tramite Tailwind CSS, costringendo le stringhe lunghe di codice a scorrere solo nel proprio riquadro senza deformare la pagina.
+
+Infine, ho dedicato particolare cura all'Accessibilità Semantica (A11y) secondo le linee guida W3C (WCAG 2.1):
+
+Tag e Landmark Semantici: Ho strutturato la pagina usando ruoli chiari (banner, main, navigation, form, article) in modo che gli screen reader possano orientarsi facilmente.
+
+Attributi ARIA Dinamici: La navbar comunica in tempo reale quale pagina è attiva tramite :aria-current, mentre i campi del form sono collegati alle loro etichette con aria-labelledby. Inoltre, i pulsanti di modifica ed eliminazione generano un'etichetta verbale dinamica basata sul contesto (es. "Modifica la nota di iRacing"), rendendoli indipendenti e comprensibili.
+
+Navigazione da tastiera e elementi Live: Chi non può usare il mouse può navigare tutto il sito usando solo il tasto Tab. Per rendere visibile dove ci si trova, ho personalizzato lo stato focus-visible con un anello azzurro neon. Infine, l'area dei grafici usa la direttiva aria-live="polite" per aggiornare i valori di giri e velocità in sottofondo senza interrompere la lettura dei software assistivi.

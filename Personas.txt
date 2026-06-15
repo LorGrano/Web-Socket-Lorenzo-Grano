@@ -1,0 +1,8 @@
+PERSONA 1: 
+Andrea, appassionato di motorsport che vuole andare a iniziare la sua carriera nel racing tramite simulatore e vuole conoscere le sue possibilità riguardo ai videogiochi più popolari per valutare con quale software iniziare la propria carriera da Sim Racer.
+
+PERSONA 2:
+Valentina, un'aspirante sviluppatore web che deve affrontare un colloquio di lavoro per un'azienda che si occupa di sviluppo di siti web. Vuole rinfrescare e approfondire le modalità e le tecnologie contemporanee per le connessione nel web
+
+Persona 3:
+Mark, il Team Manager e responsabile dell'analisi dei tempi della scuderia IJTR Speedworks team specializzato nei ragazzi under 16 nei campionati italiani. Vuole gestire i tempi di gara e qualifiche dei propri piloti, poter modificare in caso di penalità e eliminare nel caso in cui il tempo venga annullato o il pilota venga squalificato
