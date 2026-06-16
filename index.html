@@ -6,6 +6,7 @@
     <title>Simulatori Live Hub - SPA Vue</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -21,78 +22,91 @@
         button:focus-visible, input:focus-visible, textarea:focus-visible {
             outline: 2px solid #00f2fe; outline-offset: 2px;
         }
+        .nav-link        { @apply text-gray-400 hover:text-white pb-1 transition font-bold text-base; }
+        .router-link-active.nav-link { @apply text-neonCyan border-b-2 border-neonCyan; }
+        .mobile-nav-link { @apply text-gray-400 transition text-2xl font-bold; }
+        .router-link-active.mobile-nav-link { @apply text-neonCyan; }
     </style>
 </head>
 <body class="bg-techBg text-gray-200 font-sans antialiased">
-
+ 
     <div id="app" class="min-h-screen flex flex-col" v-cloak>
-        
-        <header class="w-full bg-techBg p-5 px-8 flex justify-between items-center border-b border-gray-800 sticky top-0 z-50" role="banner">
-            <div class="text-2xl font-black tracking-wider text-neonCyan uppercase cursor-pointer" 
-                 @click="changeView('statica1')" role="link" tabindex="0" @keydown.enter="changeView('statica1')" aria-label="Simulazioni Live Hub - Torna alla Home">
-                 Simulazioni Live Hub
+ 
+    </div>
+ 
+    <script type="text/x-template" id="tpl-app-root">
+        <div class="min-h-screen flex flex-col">
+ 
+            <header class="w-full bg-techBg p-5 px-8 flex justify-between items-center border-b border-gray-800 sticky top-0 z-50" role="banner">
+                <router-link to="/" class="text-2xl font-black tracking-wider text-neonCyan uppercase cursor-pointer hover:opacity-80 transition" aria-label="Simulazioni Live Hub - Torna alla Home">
+                    Simulazioni Live Hub
+                </router-link>
+ 
+                <nav class="hidden md:flex items-center gap-8" role="navigation" aria-label="Menu principale desktop">
+                    <router-link to="/"           class="nav-link focus:outline-none">WebSocket</router-link>
+                    <router-link to="/socketio"   class="nav-link focus:outline-none">Socket.io</router-link>
+                    <router-link to="/simulatori" class="nav-link focus:outline-none">Esposizione JSON</router-link>
+                    <router-link to="/telemetria" class="nav-link focus:outline-none">Note &amp; Telemetria</router-link>
+                </nav>
+ 
+                <button @click="toggleMenu" class="md:hidden w-12 h-12 flex flex-col justify-center items-end gap-1.5 focus:outline-none z-50" aria-label="Apri menu mobile" :aria-expanded="isMenuOpen.toString()" aria-controls="mobile-menu">
+                    <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'rotate-45 translate-y-2.5 bg-neonCyan': isMenuOpen}"></span>
+                    <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'opacity-0': isMenuOpen}"></span>
+                    <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'-rotate-45 -translate-y-2.5 bg-neonCyan': isMenuOpen}"></span>
+                </button>
+            </header>
+ 
+            <div id="mobile-menu" v-if="isMenuOpen" class="fixed inset-0 bg-black/95 backdrop-blur-md flex flex-col justify-center items-center z-40 md:hidden" role="dialog" aria-modal="true" aria-label="Menu mobile">
+                <nav class="flex flex-col gap-8 text-center" role="navigation" aria-label="Menu principale mobile">
+                    <router-link to="/"           class="mobile-nav-link" @click="closeMenu">WebSocket</router-link>
+                    <router-link to="/socketio"   class="mobile-nav-link" @click="closeMenu">Socket.io</router-link>
+                    <router-link to="/simulatori" class="mobile-nav-link" @click="closeMenu">Esposizione JSON</router-link>
+                    <router-link to="/telemetria" class="mobile-nav-link" @click="closeMenu">C.R.U.D. &amp; Telemetria</router-link>
+                </nav>
             </div>
-            
-            <nav class="hidden md:flex items-center gap-8 text-base font-bold" role="navigation" aria-label="Menu principale desktop">
-                <button @click="changeView('statica1')" :aria-current="currentView === 'statica1' ? 'page' : undefined" :class="currentView === 'statica1' ? 'text-neonCyan border-b-2 border-neonCyan' : 'text-gray-400 hover:text-white'" class="pb-1 transition focus:outline-none">WebSocket</button>
-                <button @click="changeView('statica2')" :aria-current="currentView === 'statica2' ? 'text-neonCyan border-b-2 border-neonCyan' : 'text-gray-400 hover:text-white'" class="pb-1 transition focus:outline-none">Socket.io</button>
-                <button @click="changeView('dinamica1')" :aria-current="currentView === 'dinamica1' ? 'text-neonCyan border-b-2 border-neonCyan' : 'text-gray-400 hover:text-white'" class="pb-1 transition focus:outline-none">Esposizione JSON</button>
-                <button @click="changeView('dinamica2')" :class="currentView === 'dinamica2' ? 'text-neonCyan border-b-2 border-neonCyan' : 'text-gray-400 hover:text-white'" class="pb-1 transition focus:outline-none">Note & Telemetria</button>
-            </nav>
-
-            <button @click="toggleMenu" class="md:hidden w-12 h-12 flex flex-col justify-center items-end gap-1.5 focus:outline-none z-50" aria-label="Apri menu mobile" :aria-expanded="isMenuOpen.toString()" aria-controls="mobile-menu">
-                <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'rotate-45 translate-y-2.5 bg-neonCyan': isMenuOpen}"></span>
-                <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'opacity-0': isMenuOpen}"></span>
-                <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'-rotate-45 -translate-y-2.5 bg-neonCyan': isMenuOpen}"></span>
-            </button>
-        </header>
-
-        <div id="mobile-menu" v-if="isMenuOpen" class="fixed inset-0 bg-black/95 backdrop-blur-md flex flex-col justify-center items-center z-40 md:hidden" role="dialog" aria-modal="true" aria-label="Menu mobile">
-            <nav class="flex flex-col gap-8 text-center text-2xl font-bold" role="navigation" aria-label="Menu principale mobile">
-                <button @click="changeView('statica1')" :aria-current="currentView === 'statica1' ? 'page' : undefined" :class="currentView === 'statica1' ? 'text-neonCyan' : 'text-gray-400'" class="transition">WebSocket</button>
-                <button @click="changeView('statica2')" :aria-current="currentView === 'statica2' ? 'text-neonCyan' : 'text-gray-400'" class="transition">Socket.io</button>
-                <button @click="changeView('dinamica1')" :aria-current="currentView === 'dinamica1' ? 'text-neonCyan' : 'text-gray-400'" class="transition">Esposizione JSON</button>
-                <button @click="changeView('dinamica2')" :class="currentView === 'dinamica2' ? 'text-neonCyan' : 'text-gray-400'" class="transition">C.R.U.D. & Telemetria</button>
-            </nav>
+ 
+            <main class="max-w-md md:max-w-7xl mx-auto px-4 md:px-8 pt-8 flex-grow w-full pb-16" role="main">
+                <router-view></router-view>
+            </main>
         </div>
-
-        <main class="max-w-md md:max-w-7xl mx-auto px-4 md:px-8 pt-8 flex-grow w-full pb-16" role="main">
-            
-            <section v-if="currentView === 'statica1'" class="flex flex-col gap-6 w-full">
-                <div>
-                    <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Web Socket Protocol</h1>
-                    <p class="text-sm md:text-base text-gray-400 mt-1">Analisi strutturale della comunicazione asincrona Full-Duplex</p>
+    </script>
+ 
+    <script type="text/x-template" id="tpl-statica1">
+        <section class="flex flex-col gap-6 w-full">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Web Socket Protocol</h1>
+                <p class="text-sm md:text-base text-gray-400 mt-1">Analisi strutturale della comunicazione asincrona Full-Duplex</p>
+            </div>
+ 
+            <hr class="border-gray-800">
+ 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
+                <div class="flex flex-col gap-5 bg-cardBg/30 p-6 rounded-2xl border border-gray-800/50 shadow-xl w-full">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-neonCyan rounded-full"></span>
+                        Connessione Persistente e Handshake HTTP
+                    </h2>
+                    <p class="text-base leading-relaxed text-gray-300 font-medium">
+                        La tecnologia WebSocket nasce per far sì che il web possa comunicare con i server in modo dinamico, efficiente e superare i limiti presenti nel protocollo HTTP o dal polling periodico dei dati che rendeva le pagine web limitate nella loro responsività e nella loro dinamicità.
+                    </p>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Nel modello standard HTTP (basato su Request/Response), ogni singola transazione esige l'apertura di un canale che viene immediatamente chiuso al termine dello scambio, portando con sé un overhead immenso dovuto alle intestazioni (header) che pesano centinaia di byte per pacchetto. I WebSocket superano radicalmente questa inefficienza riducendo la dimensione dell'header del frame a una forbice minuscola che va da appena **2 a 14 byte**, consentendo uno streaming asincrono costante perfetto per dati fitti come la telemetria motoristica.
+                    </p>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Il tunnel poggia direttamente sullo strato di trasporto **TCP (Transmission Control Protocol)**. Il decollo della connessione avviene tramite una richiesta HTTP GET speciale definita **Handshake**. Il client invia una chiave pseudo-casuale cifrata a 16 byte convertita in Base64 all'interno dell'header <code class="text-neonCyan bg-gray-900 px-1.5 py-0.5 rounded font-mono text-xs">Sec-WebSocket-Key</code>.
+                    </p>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Questo valore viene ricevuto dal server e concatenato con un codice identificativo univoco standard (GUID). Il risultato viene passato alla funzione di hash SHA-1 e il suo digest viene codificato tramite Base64. La stringa ottenuta viene alla fine inserita nell'header della risposta <code class="text-neonCyan bg-gray-900 px-1.5 py-0.5 rounded font-mono text-sm">Sec-WebSocket-Accept</code> con un codice di stato **HTTP 101 Switching Protocols**.
+                    </p>
                 </div>
-                
-                <hr class="border-gray-800">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
-                    <div class="flex flex-col gap-5 bg-cardBg/30 p-6 rounded-2xl border border-gray-800/50 shadow-xl w-full">
-                        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                            <span class="w-1.5 h-5 bg-neonCyan rounded-full"></span>
-                            Connessione Persistente e Handshake HTTP
-                        </h2>
-                        <p class="text-base leading-relaxed text-gray-300 font-medium">
-                            La tecnologia WebSocket nasce per far sì che il web possa comunicare con i server in modo dinamico, efficiente e superare i limiti presenti nel protocollo HTTP o dal polling periodico dei dati che rendeva le pagine web limitate nella loro responsività e nella loro dinamicità.
-                        </p>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Nel modello standard HTTP (basato su Request/Response), ogni singola transazione esige l'apertura di un canale che viene immediatamente chiuso al termine dello scambio, portando con sé un overhead immenso dovuto alle intestazioni (header) che pesano centinaia di byte per pacchetto. I WebSocket superano radicalmente questa inefficienza riducendo la dimensione dell'header del frame a una forbice minuscola che va da appena **2 a 14 byte**, consentendo uno streaming asincrono costante perfetto per dati fitti come la telemetria motoristica.
-                        </p>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Il tunnel poggia direttamente sullo strato di trasporto **TCP (Transmission Control Protocol)**. Il decollo della connessione avviene tramite una richiesta HTTP GET speciale definita **Handshake**. Il client invia una chiave pseudo-casuale cifrata a 16 byte convertita in Base64 all'interno dell'header <code class="text-neonCyan bg-gray-900 px-1.5 py-0.5 rounded font-mono text-xs">Sec-WebSocket-Key</code>.
-                        </p>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Questo valore viene ricevuto dal server e concatenato con un codice identificativo univoco standard (GUID). Il risultato viene passato alla funzione di hash SHA-1 e il suo digest viene codificato tramite Base64. La stringa ottenuta viene alla fine inserita nell’header della risposta <code class="text-neonCyan bg-gray-900 px-1.5 py-0.5 rounded font-mono text-sm">Sec-WebSocket-Accept</code> con un codice di stato **HTTP 101 Switching Protocols**.
-                        </p>
-                    </div>
-
-                    <div class="flex flex-col gap-6 w-full max-w-full overflow-hidden">
-                        <h2 class="text-xl font-bold text-white tracking-wide pl-1">Intestazioni HTTP Handshake</h2>
-                        <div class="flex flex-col gap-4 w-full max-w-full">
-                            <div class="flex flex-col gap-1.5 w-full max-w-full">
-                                <span class="text-xs font-bold uppercase tracking-wider text-neonBlue pl-1">Richiesta del client:</span>
-                                <pre class="code-container p-4 rounded-xl text-sm text-yellow-400 border border-gray-900 shadow-lg font-mono w-full overflow-x-auto whitespace-pre">const socket = new WebSocket("ws://server.example.com/mychat");</pre>
-                                <pre class="code-container p-4 rounded-xl text-xs text-green-400 border border-gray-900 leading-5 shadow-lg font-mono w-full overflow-x-auto whitespace-pre">
+ 
+                <div class="flex flex-col gap-6 w-full max-w-full overflow-hidden">
+                    <h2 class="text-xl font-bold text-white tracking-wide pl-1">Intestazioni HTTP Handshake</h2>
+                    <div class="flex flex-col gap-4 w-full max-w-full">
+                        <div class="flex flex-col gap-1.5 w-full max-w-full">
+                            <span class="text-xs font-bold uppercase tracking-wider text-neonBlue pl-1">Richiesta del client:</span>
+                            <pre class="code-container p-4 rounded-xl text-sm text-yellow-400 border border-gray-900 shadow-lg font-mono w-full overflow-x-auto whitespace-pre">const socket = new WebSocket("ws://server.example.com/mychat");</pre>
+                            <pre class="code-container p-4 rounded-xl text-xs text-green-400 border border-gray-900 leading-5 shadow-lg font-mono w-full overflow-x-auto whitespace-pre">
 GET /mychat HTTP/1.1 
 Host: server.example.com 
 Upgrade: websocket 
@@ -100,273 +114,279 @@ Connection: Upgrade
 Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw== 
 Sec-WebSocket-Version: 13 
 Origin: http://example.com</pre>
-                            </div>
-                            <div class="flex flex-col gap-1.5 w-full max-w-full">
-                                <span class="text-xs font-bold uppercase tracking-wider text-neonBlue pl-1">La risposta del server:</span>
-                                <pre class="code-container p-4 rounded-xl text-xs text-cyan-400 border border-gray-900 leading-5 shadow-lg font-mono w-full overflow-x-auto whitespace-pre">
+                        </div>
+                        <div class="flex flex-col gap-1.5 w-full max-w-full">
+                            <span class="text-xs font-bold uppercase tracking-wider text-neonBlue pl-1">La risposta del server:</span>
+                            <pre class="code-container p-4 rounded-xl text-xs text-cyan-400 border border-gray-900 leading-5 shadow-lg font-mono w-full overflow-x-auto whitespace-pre">
 HTTP/1.1 101 Switching Protocols 
 Upgrade: websocket 
 Connection: Upgrade 
 Sec-WebSocket-Accept: HSmrc0sMlYUkAGmm5OPpG2HaGWk= 
 Sec-WebSocket-Protocol: chat</pre>
-                            </div>
                         </div>
                     </div>
                 </div>
-
-                <hr class="border-gray-800 my-4">
-                
-                <h2 class="text-3xl font-extrabold text-white tracking-tight uppercase">Il Ciclo di Vita del Canale Asincrono</h2>
-                <p class="text-base text-gray-400 -mt-2">La gestione degli stati della connessione avviene tramite un'architettura event-driven guidata da quattro metodi di callback:</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></span> socket.onopen
-                        </h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Questo evento notifica che la negoziazione (handshake) è stata completata con successo e che il tunnel TCP è aperto e abilitato allo scambio bidirezionale di frame. Qualsiasi invocazione del metodo di trasmissione <code class="text-neonCyan font-mono text-xs">.send()</code> eseguita prima dello scatto di questo evento solleverà un'eccezione di runtime di tipo <code class="text-red-400 font-mono text-xs">INVALID_STATE_ERR</code>, poiché la pipeline di rete non è ancora inizializzata.
-                        </p>
-                    </div>
-
-                    <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span> socket.onmessage
-                        </h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Rappresenta il punto d'ingresso asincrono di tutti i pacchetti dati trasmessi dal server. A differenza di HTTP, il client non deve sollecitare la risorsa: l'evento si attiva automaticamente alla ricezione di un frame hardware. I dati arrivano all'interno della proprietà <code class="text-neonCyan font-mono text-xs">event.data</code> e possono essere stringhe semplici o dati binari.
-                        </p>
-                    </div>
-
-                    <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse"></span> socket.onerror
-                        </h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Si attiva in presenza di anomalie di rete, fallimenti di risoluzione DNS o corruzione nell'incapsulamento dei frame. In accordo con le specifiche di sicurezza W3C, l'evento espone pochissimi dettagli tecnici all'interno dell'oggetto JavaScript per prevenire falle di information leakage; viene utilizzato principalmente per aggiornare i componenti dell'interfaccia grafica.
-                        </p>
-                    </div>
-
-                    <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
-                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-gray-500"></span> socket.onclose
-                        </h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Scatta alla chiusura del canale. A differenza di onerror, l'evento fornisce parametri diagnostici utilissimi: un <code class="text-neonCyan font-mono text-xs">event.code</code> numerico standardizzato (es: 1000 per chiusura normale guidata, 1006 per disconnessione anomala) e una stringa descrittiva <code class="text-neonCyan font-mono text-xs">event.reason</code>.
-                        </p>
-                    </div>
+            </div>
+ 
+            <hr class="border-gray-800 my-4">
+ 
+            <h2 class="text-3xl font-extrabold text-white tracking-tight uppercase">Il Ciclo di Vita del Canale Asincrono</h2>
+            <p class="text-base text-gray-400 -mt-2">La gestione degli stati della connessione avviene tramite un'architettura event-driven guidata da quattro metodi di callback:</p>
+ 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></span> socket.onopen
+                    </h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Questo evento notifica che la negoziazione (handshake) è stata completata con successo e che il tunnel TCP è aperto e abilitato allo scambio bidirezionale di frame. Qualsiasi invocazione del metodo di trasmissione <code class="text-neonCyan font-mono text-xs">.send()</code> eseguita prima dello scatto di questo evento solleverà un'eccezione di runtime di tipo <code class="text-red-400 font-mono text-xs">INVALID_STATE_ERR</code>, poiché la pipeline di rete non è ancora inizializzata.
+                    </p>
                 </div>
-            </section>
-
-            <section v-if="currentView === 'statica2'" class="flex flex-col gap-6 w-full">
-                <div>
-                    <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Socket.io Architecture</h1>
-                    <p class="text-sm md:text-base text-gray-400 mt-1">Analisi, astrazione ed ottimizzazione delle reti resilienti in produzione</p>
+                <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span> socket.onmessage
+                    </h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Rappresenta il punto d'ingresso asincrono di tutti i pacchetti dati trasmessi dal server. A differenza di HTTP, il client non deve sollecitare la risorsa: l'evento si attiva automaticamente alla ricezione di un frame hardware. I dati arrivano all'interno della proprietà <code class="text-neonCyan font-mono text-xs">event.data</code> e possono essere stringhe semplici o dati binari.
+                    </p>
                 </div>
-                
-                <hr class="border-gray-800">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
-                    <div class="flex flex-col gap-5 bg-cardBg/30 p-6 rounded-2xl border border-gray-800/50 shadow-xl w-full">
-                        <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                            <span class="w-1.5 h-5 bg-neonBlue rounded-full"></span>
-                            Astrazione di Rete e Engine.io Pipeline
-                        </h2>
-                        <p class="text-base leading-relaxed text-gray-300 font-medium">
-                            Nonostante l'API WebSocket nativa sia uno strumento potente, lo sviluppo di applicazioni web in produzione si scontra spesso con i limiti fisici delle reti reali. Se un utente perde momentaneamente la connessione o naviga dietro un firewall aziendale rigido, il protocollo nativo interrompe la comunicazione senza fornire sistemi di recupero automatici.
-                        </p>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Socket.io nasce come una libreria di astrazione progettata per risolvere queste criticità, garantendo una comunicazione bidirezionale persistente, robusta e ad alta affidabilità tra client e server. È importante sottolineare che Socket.io non è un semplice wrapper di WebSocket, ma introduce un protocollo personalizzato arricchito da funzionalità avanzate.
-                        </p>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            La libreria poggia su un motore chiamato **Engine.io**, che gestisce la connessione a basso livello. Il punto di forza di questa architettura è che inverte l'approccio di decollo del canale: invece di tentare subito una connessione WebSocket rischiosa, Socket.io stabilisce immediatamente un canale sicuro via **HTTP Long-Polling** tradizionale.
-                        </p>
-                        <p class="text-base leading-relaxed text-gray-400 border-l-2 border-neonCyan pl-4 italic bg-neonCyan/5 py-2 rounded-r-xl">
-                            In questo modo viene garantito che l'applicazione funzioni nel 100% degli scenari di rete reali, eliminando i blocchi causati da infrastrutture IT obsolete.
-                        </p>
-                    </div>
-
-                    <div class="flex flex-col gap-6 w-full max-w-full overflow-hidden">
-                        <h2 class="text-xl font-bold text-white tracking-wide pl-1">I Tre Pilastri Fondamentali dell'Infrastruttura</h2>
-                        <div class="flex flex-col gap-3">
-                            <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
-                                <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">1. Riconnessione Automatica (Seamless Reconnection)</h3>
-                                <p class="text-xs md:text-sm text-gray-400 leading-relaxed">La libreria avvia immediatamente una logica di riconnessione in background utilizzando un algoritmo di ritardo esponenziale (exponential backoff), tentando di ripristinare il flusso di dati senza che lo sviluppatore debba scrivere codice aggiuntivo.</p>
-                            </div>
-                            <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
-                                <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">2. Fallback HTTP Long-Polling (HTTP Long-Polling Fallback)</h3>
-                                <p class="text-xs md:text-sm text-gray-400 leading-relaxed">Alcuni ambienti di rete o vecchi proxy aziendali bloccano le connessioni WebSocket per motivi di sicurezza. Socket.io supera questo ostacolo avviando la connessione tramite una serie di richieste HTTP Long-Polling tradizionali, per poi tentare un aggiornamento al protocollo WebSocket.</p>
-                            </div>
-                            <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
-                                <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">3. Multiplexing, Namespaces e Stanze (Rooms)</h3>
-                                <p class="text-xs md:text-sm text-gray-400 leading-relaxed">Socket.io introduce nativamente i concetti di Namespaces (per separare le logiche dell'app su un'connessione, es. chat e telemetria in parallelo) e di Stanze (Rooms), che permettono al server di trasmettere un pacchetto esclusivamente a un gruppo selezionato di client.</p>
-                            </div>
+                <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse"></span> socket.onerror
+                    </h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Si attiva in presenza di anomalie di rete, fallimenti di risoluzione DNS o corruzione nell'incapsulamento dei frame. In accordo con le specifiche di sicurezza W3C, l'evento espone pochissimi dettagli tecnici all'interno dell'oggetto JavaScript per prevenire falle di information leakage; viene utilizzato principalmente per aggiornare i componenti dell'interfaccia grafica.
+                    </p>
+                </div>
+                <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gray-500"></span> socket.onclose
+                    </h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Scatta alla chiusura del canale. A differenza di onerror, l'evento fornisce parametri diagnostici utilissimi: un <code class="text-neonCyan font-mono text-xs">event.code</code> numerico standardizzato (es: 1000 per chiusura normale guidata, 1006 per disconnessione anomala) e una stringa descrittiva <code class="text-neonCyan font-mono text-xs">event.reason</code>.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </script>
+ 
+    <script type="text/x-template" id="tpl-statica2">
+        <section class="flex flex-col gap-6 w-full">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Socket.io Architecture</h1>
+                <p class="text-sm md:text-base text-gray-400 mt-1">Analisi, astrazione ed ottimizzazione delle reti resilienti in produzione</p>
+            </div>
+ 
+            <hr class="border-gray-800">
+ 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
+                <div class="flex flex-col gap-5 bg-cardBg/30 p-6 rounded-2xl border border-gray-800/50 shadow-xl w-full">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-neonBlue rounded-full"></span>
+                        Astrazione di Rete e Engine.io Pipeline
+                    </h2>
+                    <p class="text-base leading-relaxed text-gray-300 font-medium">
+                        Nonostante l'API WebSocket nativa sia uno strumento potente, lo sviluppo di applicazioni web in produzione si scontra spesso con i limiti fisici delle reti reali. Se un utente perde momentaneamente la connessione o naviga dietro un firewall aziendale rigido, il protocollo nativo interrompe la comunicazione senza fornire sistemi di recupero automatici.
+                    </p>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Socket.io nasce come una libreria di astrazione progettata per risolvere queste criticità, garantendo una comunicazione bidirezionale persistente, robusta e ad alta affidabilità tra client e server. È importante sottolineare che Socket.io non è un semplice wrapper di WebSocket, ma introduce un protocollo personalizzato arricchito da funzionalità avanzate.
+                    </p>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        La libreria poggia su un motore chiamato **Engine.io**, che gestisce la connessione a basso livello. Il punto di forza di questa architettura è che inverte l'approccio di decollo del canale: invece di tentare subito una connessione WebSocket rischiosa, Socket.io stabilisce immediatamente un canale sicuro via **HTTP Long-Polling** tradizionale.
+                    </p>
+                    <p class="text-base leading-relaxed text-gray-400 border-l-2 border-neonCyan pl-4 italic bg-neonCyan/5 py-2 rounded-r-xl">
+                        In questo modo viene garantito che l'applicazione funzioni nel 100% degli scenari di rete reali, eliminando i blocchi causati da infrastrutture IT obsolete.
+                    </p>
+                </div>
+ 
+                <div class="flex flex-col gap-6 w-full max-w-full overflow-hidden">
+                    <h2 class="text-xl font-bold text-white tracking-wide pl-1">I Tre Pilastri Fondamentali dell'Infrastruttura</h2>
+                    <div class="flex flex-col gap-3">
+                        <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
+                            <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">1. Riconnessione Automatica (Seamless Reconnection)</h3>
+                            <p class="text-xs md:text-sm text-gray-400 leading-relaxed">La libreria avvia immediatamente una logica di riconnessione in background utilizzando un algoritmo di ritardo esponenziale (exponential backoff), tentando di ripristinare il flusso di dati senza che lo sviluppatore debba scrivere codice aggiuntivo.</p>
+                        </div>
+                        <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
+                            <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">2. Fallback HTTP Long-Polling (HTTP Long-Polling Fallback)</h3>
+                            <p class="text-xs md:text-sm text-gray-400 leading-relaxed">Alcuni ambienti di rete o vecchi proxy aziendali bloccano le connessioni WebSocket per motivi di sicurezza. Socket.io supera questo ostacolo avviando la connessione tramite una serie di richieste HTTP Long-Polling tradizionali, per poi tentare un aggiornamento al protocollo WebSocket.</p>
+                        </div>
+                        <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
+                            <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">3. Multiplexing, Namespaces e Stanze (Rooms)</h3>
+                            <p class="text-xs md:text-sm text-gray-400 leading-relaxed">Socket.io introduce nativamente i concetti di Namespaces (per separare le logiche dell'app su un'connessione, es. chat e telemetria in parallelo) e di Stanze (Rooms), che permettono al server di trasmettere un pacchetto esclusivamente a un gruppo selezionato di client.</p>
                         </div>
                     </div>
                 </div>
-            </section>
-
-            <section v-if="currentView === 'dinamica1'" class="flex flex-col gap-6 w-full" aria-label="Elenco dei simulatori attivi">
-                <div>
-                    <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Database JSON Unificato</h1>
-                    <p class="text-sm md:text-base text-gray-400 mt-1">Esplorazione dinamica dei nodi estratti asincronamente dal file unico (simulatori.json)</p>
+            </div>
+        </section>
+    </script>
+ 
+    <script type="text/x-template" id="tpl-dinamica1">
+        <section class="flex flex-col gap-6 w-full" aria-label="Elenco dei simulatori attivi">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Database JSON Unificato</h1>
+                <p class="text-sm md:text-base text-gray-400 mt-1">Esplorazione dinamica dei nodi estratti asincronamente dal file unico (simulatori.json)</p>
+            </div>
+            <hr class="border-gray-800">
+            <div class="flex flex-col gap-2">
+                <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Struttura Dataset</h2>
+                <div class="code-container p-4 rounded-xl border border-neonCyan/30 text-xs md:text-sm text-cyan-400 overflow-x-auto leading-relaxed shadow-xl font-mono w-full">
+                    <pre>{{ JSON.stringify(simulatori, null, 2) }}</pre>
                 </div>
-                <hr class="border-gray-800">
-                <div class="flex flex-col gap-2">
-                    <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Struttura Dataset</h2>
-                    <div class="code-container p-4 rounded-xl border border-neonCyan/30 text-xs md:text-sm text-cyan-400 overflow-x-auto leading-relaxed shadow-xl font-mono w-full">
-                        <pre>{{ JSON.stringify(simulatori, null, 2) }}</pre>
-                    </div>
-                </div>
-                <hr class="border-gray-800">
-                
-                <h2 class="text-3xl font-black text-white uppercase tracking-tight">Simulatori Attivi nel Sistema</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                    <div v-for="sim in simulatori" :key="sim.id" class="p-6 bg-cardBg rounded-2xl border border-gray-800 flex flex-col justify-between min-h-[340px] transition duration-300 hover:border-gray-600 shadow-xl">
-                        <div>
-                            <div class="flex justify-between items-start gap-2 mb-3">
-                                <div class="flex items-center gap-3">
-                                    <img :src="sim.logo" :alt="'Logo di ' + sim.name" class="w-10 h-10 object-contain rounded bg-transparent" @error="sim.logo='https://via.placeholder.com/40?text=Sim'">
-                                    <h3 class="text-xl font-bold text-white tracking-wide leading-tight">{{ sim.name }}</h3>
+            </div>
+            <hr class="border-gray-800">
+ 
+            <h2 class="text-3xl font-black text-white uppercase tracking-tight">Simulatori Attivi nel Sistema</h2>
+ 
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                <div v-for="sim in simulatori" :key="sim.id" class="p-6 bg-cardBg rounded-2xl border border-gray-800 flex flex-col justify-between min-h-[340px] transition duration-300 hover:border-gray-600 shadow-xl">
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <div class="flex items-center gap-3">
+                                <img :src="sim.logo" :alt="'Logo di ' + sim.name" class="w-10 h-10 object-contain rounded bg-transparent" @error="sim.logo='https://via.placeholder.com/40?text=Sim'">
+                                <h3 class="text-xl font-bold text-white tracking-wide leading-tight">{{ sim.name }}</h3>
+                            </div>
+                            <span class="text-xs font-black px-2.5 py-1 rounded-md border uppercase font-mono shadow-sm flex-shrink-0" :class="sim.is_active_broadcasting ? 'text-green-400 border-green-500/30 bg-green-500/5' : 'text-gray-500 border-gray-800 bg-gray-800/10'">
+                                {{ sim.is_active_broadcasting ? 'Live' : 'Offline' }}
+                            </span>
+                        </div>
+ 
+                        <div class="text-xs text-gray-400 flex flex-col gap-2 pl-1.5 border-l-2 border-gray-800 my-4">
+                            <div>Sviluppatore: <span class="text-gray-200 font-extrabold ml-1">{{ sim.developer }}</span></div>
+                            <div>Frequenza: <span class="text-neonBlue font-black font-mono ml-1 text-sm">{{ sim.frequency_hz }} Hz</span></div>
+                            <div>Formato Pacchetto: <span class="text-cyan-400 font-mono ml-1">{{ sim.packet_format }}</span></div>
+                            <div class="mt-1">
+                                <span class="block text-[10px] uppercase font-bold text-gray-500 mb-1">Canali attivi:</span>
+                                <div class="flex flex-wrap gap-1">
+                                    <span v-for="ch in sim.channels_list" :key="ch" class="text-[9px] bg-black/40 border border-gray-800 px-1.5 py-0.5 rounded text-gray-300 font-mono uppercase font-bold">{{ ch }}</span>
                                 </div>
-                                <span class="text-xs font-black px-2.5 py-1 rounded-md border uppercase font-mono shadow-sm flex-shrink-0" :class="sim.is_active_broadcasting ? 'text-green-400 border-green-500/30 bg-green-500/5' : 'text-gray-500 border-gray-800 bg-gray-800/10'">
-                                    {{ sim.is_active_broadcasting ? 'Live' : 'Offline' }}
-                                </span>
                             </div>
-                            
-                            <div class="text-xs text-gray-400 flex flex-col gap-2 pl-1.5 border-l-2 border-gray-800 my-4">
-                                <div>Sviluppatore: <span class="text-gray-200 font-extrabold ml-1">{{ sim.developer }}</span></div>
-                                <div>Frequenza: <span class="text-neonBlue font-black font-mono ml-1 text-sm">{{ sim.frequency_hz }} Hz</span></div>
-                                <div>Formato Pacchetto: <span class="text-cyan-400 font-mono ml-1">{{ sim.packet_format }}</span></div>
-                                <div class="mt-1">
-                                    <span class="block text-[10px] uppercase font-bold text-gray-500 mb-1">Canali attivi:</span>
-                                    <div class="flex flex-wrap gap-1">
-                                        <span v-for="ch in sim.channels_list" :key="ch" class="text-[9px] bg-black/40 border border-gray-800 px-1.5 py-0.5 rounded text-gray-300 font-mono uppercase font-bold">{{ ch }}</span>
+                        </div>
+                    </div>
+ 
+                    <router-link v-if="sim.is_active_broadcasting" to="/telemetria" :aria-label="'Apri telemetria per ' + sim.name"
+                        class="w-full text-center py-3 rounded-xl text-xs font-black tracking-widest uppercase border transition duration-200 mt-auto focus:outline-none bg-gradient-to-r from-neonBlue to-blue-600 text-white border-transparent hover:brightness-110 active:scale-[0.99]">
+                        Apri Telemetria Live
+                    </router-link>
+                    <span v-else :aria-label="'Telemetria non disponibile per ' + sim.name"
+                        class="w-full text-center py-3 rounded-xl text-xs font-black tracking-widest uppercase border mt-auto bg-gray-800/20 text-gray-500 border-gray-800/60 cursor-not-allowed block">
+                        Telemetria Non Disponibile
+                    </span>
+                </div>
+            </div>
+        </section>
+    </script>
+ 
+    <script type="text/x-template" id="tpl-dinamica2">
+        <section class="flex flex-col gap-6 w-full" aria-label="Plancia note ingegneristiche">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Gestione Note Sessioni</h1>
+                <p class="text-sm md:text-base text-gray-400 mt-1">Esplorazione dei flussi e analisi dati dei simulatori di guida</p>
+            </div>
+ 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
+                <div class="p-6 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-5 shadow-2xl md:sticky md:top-24 w-full" role="form" aria-label="Modulo nota">
+                    <h2 class="text-2xl font-black text-white tracking-wide border-b border-gray-800 pb-3 flex items-center gap-2">
+                        <span class="w-2 h-5 bg-neonCyan rounded-full"></span>{{ isEditing ? 'Modifica Nota Ingegneristica' : 'CREA NUOVA NOTA' }}
+                    </h2>
+                    <div class="flex flex-col gap-4 text-sm font-medium">
+                        <div class="flex flex-col gap-1.5">
+                            <label id="lbl-sim" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Simulatore</label>
+                            <input v-model="formNota.simulatore" type="text" aria-labelledby="lbl-sim" placeholder="Es: ACC, iRacing" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label id="lbl-circ" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Circuito</label>
+                            <input v-model="formNota.circuito" type="text" aria-labelledby="lbl-circ" placeholder="Es: Vallelunga, Imola" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label id="lbl-auto" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Auto Vettura</label>
+                            <input v-model="formNota.auto" type="text" aria-labelledby="lbl-auto" placeholder="Es: Mazda RX-7, BMW M4" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label id="lbl-tempo" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Tempo Giro</label>
+                            <input v-model="formNota.tempoGiro" type="text" aria-labelledby="lbl-tempo" placeholder="Es: 1:38:146" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan font-mono transition">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label id="lbl-nota" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Nota Tecnica</label>
+                            <textarea v-model="formNota.note" aria-labelledby="lbl-nota" rows="4" placeholder="Es: Problemi bloccaggio anteriore..." class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition"></textarea>
+                        </div>
+                        <div class="flex gap-3 mt-3">
+                            <button @click="salvaNota" class="flex-grow bg-gradient-to-r from-neonCyan to-neonBlue text-techBg font-black py-3.5 rounded-xl hover:brightness-110 transition uppercase text-sm tracking-widest shadow-md">
+                                {{ isEditing ? 'Aggiorna Record' : 'SALVA' }}
+                            </button>
+                            <button v-if="isEditing" @click="annullaModifica" class="bg-gray-800 text-gray-400 px-6 font-bold py-3.5 rounded-xl hover:bg-gray-700 transition uppercase text-sm tracking-wider">Annulla</button>
+                        </div>
+                    </div>
+                </div>
+ 
+                <div class="flex flex-col gap-6 w-full">
+                    <div class="p-5 bg-cardBg rounded-2xl border border-neonCyan/30 flex flex-col gap-4 shadow-2xl relative overflow-hidden" aria-live="polite" aria-label="Quadro strumenti telemetria live">
+                        <div class="flex justify-between items-center border-b border-gray-800/60 pb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" :class="isBooting ? 'text-yellow-400 animate-pulse' : 'text-neonBlue'">
+                                <span class="w-2 h-2 rounded-full" :class="isBooting ? 'bg-yellow-400' : 'bg-green-400 animate-pulse'"></span>
+                                {{ isBooting ? 'SYSTEM CHECK RUNNING...' : 'TELEMETRY FEED OK (60Hz)' }}
+                            </span>
+                            <span class="text-[11px] font-mono font-bold text-neonCyan uppercase bg-neonCyan/10 px-2 py-0.5 rounded border border-neonCyan/20">Imola GP</span>
+                        </div>
+ 
+                        <div class="grid grid-cols-2 gap-4 items-center bg-black/40 p-4 rounded-xl border border-gray-900 w-full">
+                            <div class="flex flex-col items-center justify-center relative h-32">
+                                <svg class="w-28 h-28" aria-hidden="true">
+                                    <circle cx="56" cy="56" r="45" stroke="#111317" stroke-width="6" fill="transparent" />
+                                    <path d="M 24.18 87.82 A 45 45 0 1 1 87.82 87.82" fill="transparent" stroke="#1f2937" stroke-width="4" stroke-dasharray="2 4" />
+                                    <line x1="56" y1="56" x2="56" y2="16" stroke-width="3" stroke-linecap="round" class="gauge-needle" :transform="'rotate(' + currentAngleRpm + ' 56 56)'" :stroke="liveTelemetry.rpm > 11800 ? '#ef4444' : '#00f2fe'"/>
+                                    <circle cx="56" cy="56" r="4.5" fill="#161920" stroke="#00f2fe" stroke-width="1.5"/>
+                                </svg>
+                                <div class="absolute bottom-1 text-center">
+                                    <span class="text-xl font-mono font-black block tracking-tight text-white mt-10">{{ Math.round(liveTelemetry.rpm) }}</span>
+                                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block -mt-1">RPM</span>
+                                </div>
+                            </div>
+ 
+                            <div class="flex flex-col items-center justify-center relative h-32 border-l border-gray-800/60 pl-2">
+                                <svg class="w-28 h-28" aria-hidden="true">
+                                    <circle cx="56" cy="56" r="45" stroke="#111317" stroke-width="6" fill="transparent" />
+                                    <path d="M 24.18 87.82 A 45 45 0 1 1 87.82 87.82" fill="transparent" stroke="#1f2937" stroke-width="4" stroke-dasharray="2 4" />
+                                    <line x1="56" y1="56" x2="56" y2="16" stroke="#4facfe" stroke-width="3" stroke-linecap="round" class="gauge-needle" :transform="'rotate(' + currentAngleSpeed + ' 56 56)'" />
+                                    <circle cx="56" cy="56" r="4.5" fill="#161920" stroke="#4facfe" stroke-width="1.5"/>
+                                </svg>
+                                <div class="absolute bottom-1 text-center">
+                                    <span class="text-2xl font-mono font-black block tracking-tighter text-neonCyan mt-10">{{ Math.round(liveTelemetry.speed) }}</span>
+                                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block -mt-1">km/h</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full text-center bg-black/50 py-2 rounded-xl font-mono text-sm text-gray-400 border border-gray-900/60 font-bold">
+                            MARCIA INSERITA: <span class="text-neonBlue font-black text-base ml-1">{{ liveTelemetry.n_gear }}</span>
+                        </div>
+                    </div>
+ 
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-3xl font-black text-white tracking-tight uppercase">Note Esistenti</h2>
+                        <div v-for="nota in note" :key="nota.id" class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-4 transition hover:border-gray-700 shadow-xl w-full" role="article" :aria-label="'Nota per ' + nota.simulatore">
+                            <div class="flex justify-between items-start w-full">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-bold px-2.5 py-1 bg-neonBlue/10 text-neonBlue border border-neonBlue/20 rounded-md font-mono uppercase tracking-wide shadow-sm">{{ nota.simulatore }}</span>
+                                        <span class="text-base font-extrabold text-white">{{ nota.circuito }}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-400 font-bold mt-2 pl-0.5 tracking-wide">
+                                        Vettura: <span class="text-gray-200 font-extrabold">{{ nota.auto }}</span> | Lap Time: <span class="text-neonCyan font-mono font-black text-sm">{{ nota.tempoGiro }}</span>
                                     </div>
                                 </div>
+                                <span class="text-[10px] font-mono bg-green-500/5 border border-green-500/30 text-green-400 px-2.5 py-1 rounded-full uppercase tracking-wider font-black shadow-inner flex-shrink-0 mt-[8px] md:mt-[4px]">READ</span>
                             </div>
-                        </div>
-                        
-                        <button @click="sim.is_active_broadcasting ? changeView('dinamica2') : null" :aria-label="'Apri telemetria per ' + sim.name" class="w-full text-center py-3 rounded-xl text-xs font-black tracking-widest uppercase border transition duration-200 mt-auto focus:outline-none" :class="sim.is_active_broadcasting ? 'bg-gradient-to-r from-neonBlue to-blue-600 text-white border-transparent hover:brightness-110 active:scale-[0.99]' : 'bg-gray-800/20 text-gray-500 border-gray-800/60 cursor-not-allowed'">
-                            {{ sim.is_active_broadcasting ? 'Apri Telemetria Live' : 'Telemetria Non Disponibile' }}
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section v-if="currentView === 'dinamica2'" class="flex flex-col gap-6 w-full" aria-label="Plancia note ingegneristiche">
-                <div>
-                    <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Gestione Note Sessioni</h1>
-                    <p class="text-sm md:text-base text-gray-400 mt-1">Esplorazione dei flussi e analisi dati dei simulatori di guida</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full">
-                    <div class="p-6 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-5 shadow-2xl md:sticky md:top-24 w-full" role="form" aria-label="Modulo nota">
-                        <h2 class="text-2xl font-black text-white tracking-wide border-b border-gray-800 pb-3 flex items-center gap-2">
-                            <span class="w-2 h-5 bg-neonCyan rounded-full"></span>{{ isEditing ? 'Modifica Nota Ingegneristica' : 'CREA NUOVA NOTA' }}
-                        </h2>
-                        <div class="flex flex-col gap-4 text-sm font-medium">
-                            <div class="flex flex-col gap-1.5">
-                                <label id="lbl-sim" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Simulatore</label>
-                                <input v-model="formNota.simulatore" type="text" aria-labelledby="lbl-sim" placeholder="Es: ACC, iRacing" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <label id="lbl-circ" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Circuito</label>
-                                <input v-model="formNota.circuito" type="text" aria-labelledby="lbl-circ" placeholder="Es: Vallelunga, Imola" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <label id="lbl-auto" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Auto Vettura</label>
-                                <input v-model="formNota.auto" type="text" aria-labelledby="lbl-auto" placeholder="Es: Mazda RX-7, BMW M4" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <label id="lbl-tempo" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Tempo Giro</label>
-                                <input v-model="formNota.tempoGiro" type="text" aria-labelledby="lbl-tempo" placeholder="Es: 1:38:146" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan font-mono transition">
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <label id="lbl-nota" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Nota Tecnica</label>
-                                <textarea v-model="formNota.note" aria-labelledby="lbl-nota" rows="4" placeholder="Es: Problemi bloccaggio anteriore..." class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition"></textarea>
-                            </div>
-                            <div class="flex gap-3 mt-3">
-                                <button @click="salvaNota" class="flex-grow bg-gradient-to-r from-neonCyan to-neonBlue text-techBg font-black py-3.5 rounded-xl hover:brightness-110 transition uppercase text-sm tracking-widest shadow-md">
-                                    {{ isEditing ? 'Aggiorna Record' : 'SALVA' }}
-                                </button>
-                                <button v-if="isEditing" @click="annullaModifica" class="bg-gray-800 text-gray-400 px-6 font-bold py-3.5 rounded-xl hover:bg-gray-700 transition uppercase text-sm tracking-wider">Annulla</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-6 w-full">
-                        <div class="p-5 bg-cardBg rounded-2xl border border-neonCyan/30 flex flex-col gap-4 shadow-2xl relative overflow-hidden" aria-live="polite" aria-label="Quadro strumenti telemetria live">
-                            <div class="flex justify-between items-center border-b border-gray-800/60 pb-2">
-                                <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" :class="isBooting ? 'text-yellow-400 animate-pulse' : 'text-neonBlue'">
-                                    <span class="w-2 h-2 rounded-full" :class="isBooting ? 'bg-yellow-400' : 'bg-green-400 animate-pulse'"></span>
-                                    {{ isBooting ? 'SYSTEM CHECK RUNNING...' : 'TELEMETRY FEED OK (60Hz)' }}
-                                </span>
-                                <span class="text-[11px] font-mono font-bold text-neonCyan uppercase bg-neonCyan/10 px-2 py-0.5 rounded border border-neonCyan/20">Imola GP</span>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4 items-center bg-black/40 p-4 rounded-xl border border-gray-900 w-full">
-                                <div class="flex flex-col items-center justify-center relative h-32">
-                                    <svg class="w-28 h-28" aria-hidden="true">
-                                        <circle cx="56" cy="56" r="45" stroke="#111317" stroke-width="6" fill="transparent" />
-                                        <path d="M 24.18 87.82 A 45 45 0 1 1 87.82 87.82" fill="transparent" stroke="#1f2937" stroke-width="4" stroke-dasharray="2 4" />
-                                        <line x1="56" y1="56" x2="56" y2="16" stroke-width="3" stroke-linecap="round" class="gauge-needle" :transform="'rotate(' + currentAngleRpm + ' 56 56)'" :stroke="liveTelemetry.rpm > 11800 ? '#ef4444' : '#00f2fe'"/>
-                                        <circle cx="56" cy="56" r="4.5" fill="#161920" stroke="#00f2fe" stroke-width="1.5"/>
-                                    </svg>
-                                    <div class="absolute bottom-1 text-center">
-                                        <span class="text-xl font-mono font-black block tracking-tight text-white mt-10">{{ Math.round(liveTelemetry.rpm) }}</span>
-                                        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block -mt-1">RPM</span>
-                                    </div>
-                                </div>
-
-                                <div class="flex flex-col items-center justify-center relative h-32 border-l border-gray-800/60 pl-2">
-                                    <svg class="w-28 h-28" aria-hidden="true">
-                                        <circle cx="56" cy="56" r="45" stroke="#111317" stroke-width="6" fill="transparent" />
-                                        <path d="M 24.18 87.82 A 45 45 0 1 1 87.82 87.82" fill="transparent" stroke="#1f2937" stroke-width="4" stroke-dasharray="2 4" />
-                                        <line x1="56" y1="56" x2="56" y2="16" stroke="#4facfe" stroke-width="3" stroke-linecap="round" class="gauge-needle" :transform="'rotate(' + currentAngleSpeed + ' 56 56)'" />
-                                        <circle cx="56" cy="56" r="4.5" fill="#161920" stroke="#4facfe" stroke-width="1.5"/>
-                                    </svg>
-                                    <div class="absolute bottom-1 text-center">
-                                        <span class="text-2xl font-mono font-black block tracking-tighter text-neonCyan mt-10">{{ Math.round(liveTelemetry.speed) }}</span>
-                                        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block -mt-1">km/h</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="w-full text-center bg-black/50 py-2 rounded-xl font-mono text-sm text-gray-400 border border-gray-900/60 font-bold">
-                                MARCIA INSERITA: <span class="text-neonBlue font-black text-base ml-1">{{ liveTelemetry.n_gear }}</span>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col gap-4">
-                            <h2 class="text-3xl font-black text-white tracking-tight uppercase">Note Esistenti</h2>
-                            <div v-for="nota in note" :key="nota.id" class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-4 transition hover:border-gray-700 shadow-xl w-full" role="article" :aria-label="'Nota per ' + nota.simulatore">
-                                <div class="flex justify-between items-start w-full">
-                                    <div>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs font-bold px-2.5 py-1 bg-neonBlue/10 text-neonBlue border border-neonBlue/20 rounded-md font-mono uppercase tracking-wide shadow-sm">{{ nota.simulatore }}</span>
-                                            <span class="text-base font-extrabold text-white">{{ nota.circuito }}</span>
-                                        </div>
-                                        <div class="text-xs text-gray-400 font-bold mt-2 pl-0.5 tracking-wide">
-                                            Vettura: <span class="text-gray-200 font-extrabold">{{ nota.auto }}</span> | Lap Time: <span class="text-neonCyan font-mono font-black text-sm">{{ nota.tempoGiro }}</span>
-                                        </div>
-                                    </div>
-                                    <span class="text-[10px] font-mono bg-green-500/5 border border-green-500/30 text-green-400 px-2.5 py-1 rounded-full uppercase tracking-wider font-black shadow-inner flex-shrink-0 mt-[8px] md:mt-[4px]">READ</span>
-                                </div>
-                                <p class="text-base text-gray-300 bg-black/25 p-4 rounded-xl border border-gray-900/40 leading-relaxed pl-4 border-l-4 border-l-neonCyan italic font-medium w-full">"{{ nota.note }}"</p>
-                                <div class="flex justify-end gap-2 text-xs font-black uppercase mt-1 w-full">
-                                    <button @click="avviaModifica(nota)" :aria-label="'Modifica la nota di ' + nota.simulatore" class="px-4 py-2 bg-gray-800/80 text-gray-200 rounded-lg hover:text-neonCyan border border-gray-700 transition shadow-md">Modifica</button>
-                                    <button @click="eliminaNota(nota.id)" :aria-label="'Elimina la nota di ' + nota.simulatore" class="px-4 py-2 bg-red-950/20 text-red-400 border border-red-900/30 rounded-lg hover:bg-red-900/40 transition shadow-md">Elimina</button>
-                                </div>
+                            <p class="text-base text-gray-300 bg-black/25 p-4 rounded-xl border border-gray-900/40 leading-relaxed pl-4 border-l-4 border-l-neonCyan italic font-medium w-full">"{{ nota.note }}"</p>
+                            <div class="flex justify-end gap-2 text-xs font-black uppercase mt-1 w-full">
+                                <button @click="avviaModifica(nota)" :aria-label="'Modifica la nota di ' + nota.simulatore" class="px-4 py-2 bg-gray-800/80 text-gray-200 rounded-lg hover:text-neonCyan border border-gray-700 transition shadow-md">Modifica</button>
+                                <button @click="eliminaNota(nota.id)" :aria-label="'Elimina la nota di ' + nota.simulatore" class="px-4 py-2 bg-red-950/20 text-red-400 border border-red-900/30 rounded-lg hover:bg-red-900/40 transition shadow-md">Elimina</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
-
-        </main>
-    </div>
-
+            </div>
+        </section>
+    </script>
+ 
     <script src="esercizio.js" defer></script>
 </body>
 </html>

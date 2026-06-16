@@ -1,46 +1,19 @@
-// Estrazione dei metodi reattivi direttamente dall'istanza globale di Vue
 const { ref, onMounted, onUnmounted, watch } = Vue;
+const { createRouter, createWebHashHistory, RouterView, RouterLink } = VueRouter;
 
-const appLogic = {
+const PageWebSocket = {
+    template: '#tpl-statica1'
+};
+
+const PageSocketIo = {
+    template: '#tpl-statica2'
+};
+
+const PageSimulatori = {
+    template: '#tpl-dinamica1',
     setup() {
-        const currentView = ref('statica1');
-        const isMenuOpen = ref(false);
-
         const simulatori = ref([]);
 
-        // Dati CRUD per le note ingegneristiche
-        const note = ref([]);
-        const formNota = ref({ id: null, simulatore: '', circuito: '', auto: '', tempoGiro: '', note: '' });
-        const isEditing = ref(false);
-        
-        // Motore hardware di telemetria
-        const liveTelemetry = ref({ rpm: 0, speed: 0, n_gear: 1 });
-        let animationFrameId = null;
-        
-        const currentAngleRpm = ref(-135);
-        const currentAngleSpeed = ref(-135);
-
-        const isBooting = ref(true);
-        let bootProgress = 0; 
-        let currentIndex = 0;
-        let interpolationFactor = 0;
-        const interpolationSpeed = 0.015; 
-
-        const openF1TelemetryStream = [
-            { rpm: 5200, speed: 115, n_gear: 2 },  { rpm: 7800, speed: 145, n_gear: 3 },
-            { rpm: 9600, speed: 185, n_gear: 3 },  { rpm: 11400, speed: 220, n_gear: 4 }, 
-            { rpm: 12200, speed: 265, n_gear: 5 },  { rpm: 12500, speed: 302, n_gear: 6 }, 
-            { rpm: 4800, speed: 95, n_gear: 2 },   { rpm: 6900, speed: 130, n_gear: 2 },
-            { rpm: 9800, speed: 185, n_gear: 3 },  { rpm: 11800, speed: 245, n_gear: 5 }, 
-            { rpm: 12400, speed: 295, n_gear: 6 },  { rpm: 4100, speed: 82, n_gear: 1 },   
-            { rpm: 7500, speed: 135, n_gear: 3 },   { rpm: 10400, speed: 210, n_gear: 4 }, 
-            { rpm: 4300, speed: 85, n_gear: 2 },   { rpm: 7200, speed: 140, n_gear: 3 },
-            { rpm: 10900, speed: 235, n_gear: 5 },  { rpm: 4600, speed: 92, n_gear: 2 },   
-            { rpm: 8200, speed: 155, n_gear: 3 },  { rpm: 11100, speed: 240, n_gear: 5 }, 
-            { rpm: 3900, speed: 78, n_gear: 1 },   { rpm: 7100, speed: 122, n_gear: 2 }   
-        ];
-
-        // PIPELINE ASINCRONA CON STRATEGIA DI CACHE BUSTING PER FORZARE XAMPP
         const recuperaDatiSimulatori = async () => {
             try {
                 const response = await fetch(`simulatori.json?v=${Date.now()}`);
@@ -51,6 +24,45 @@ const appLogic = {
                 console.error("Impossibile caricare il file JSON esterno:", error);
             }
         };
+
+        onMounted(() => recuperaDatiSimulatori());
+
+        return { simulatori };
+    }
+};
+
+const PageTelemetria = {
+    template: '#tpl-dinamica2',
+    setup() {
+        const note = ref([]);
+        const formNota = ref({ id: null, simulatore: '', circuito: '', auto: '', tempoGiro: '', note: '' });
+        const isEditing = ref(false);
+
+        const liveTelemetry = ref({ rpm: 0, speed: 0, n_gear: 1 });
+        let animationFrameId = null;
+
+        const currentAngleRpm = ref(-135);
+        const currentAngleSpeed = ref(-135);
+
+        const isBooting = ref(true);
+        let bootProgress = 0;
+        let currentIndex = 0;
+        let interpolationFactor = 0;
+        const interpolationSpeed = 0.015;
+
+        const openF1TelemetryStream = [
+            { rpm: 5200, speed: 115, n_gear: 2 },  { rpm: 7800, speed: 145, n_gear: 3 },
+            { rpm: 9600, speed: 185, n_gear: 3 },  { rpm: 11400, speed: 220, n_gear: 4 },
+            { rpm: 12200, speed: 265, n_gear: 5 },  { rpm: 12500, speed: 302, n_gear: 6 },
+            { rpm: 4800, speed: 95, n_gear: 2 },   { rpm: 6900, speed: 130, n_gear: 2 },
+            { rpm: 9800, speed: 185, n_gear: 3 },  { rpm: 11800, speed: 245, n_gear: 5 },
+            { rpm: 12400, speed: 295, n_gear: 6 },  { rpm: 4100, speed: 82, n_gear: 1 },
+            { rpm: 7500, speed: 135, n_gear: 3 },   { rpm: 10400, speed: 210, n_gear: 4 },
+            { rpm: 4300, speed: 85, n_gear: 2 },   { rpm: 7200, speed: 140, n_gear: 3 },
+            { rpm: 10900, speed: 235, n_gear: 5 },  { rpm: 4600, speed: 92, n_gear: 2 },
+            { rpm: 8200, speed: 155, n_gear: 3 },  { rpm: 11100, speed: 240, n_gear: 5 },
+            { rpm: 3900, speed: 78, n_gear: 1 },   { rpm: 7100, speed: 122, n_gear: 2 }
+        ];
 
         const caricaNote = () => {
             const noteSalvate = localStorage.getItem('sim_racing_notes');
@@ -72,7 +84,7 @@ const appLogic = {
                 if (index !== -1) note.value[index] = { ...formNota.value };
                 isEditing.value = false;
             } else {
-                note.value.unshift({ id: Date.now(), ...formNota.value }); 
+                note.value.unshift({ id: Date.now(), ...formNota.value });
             }
             localStorage.setItem('sim_racing_notes', JSON.stringify(note.value));
             resetForm();
@@ -94,15 +106,15 @@ const appLogic = {
         const loopTelemetriaHardware = () => {
             if (isBooting.value) {
                 if (bootProgress < 1) {
-                    bootProgress += 0.02; 
-                    liveTelemetry.value.rpm = lerp(0, 13000, bootProgress);
-                    liveTelemetry.value.speed = lerp(0, 320, bootProgress);
+                    bootProgress += 0.02;
+                    liveTelemetry.value.rpm   = lerp(0, 13000, Math.pow(bootProgress, 0.7));
+                    liveTelemetry.value.speed = lerp(0, 320,   Math.max(0, (bootProgress - 0.35) / 0.65));
                     liveTelemetry.value.n_gear = Math.min(Math.floor(bootProgress * 8) + 1, 8);
                 } else if (bootProgress < 2) {
                     bootProgress += 0.03;
                     const returnFactor = bootProgress - 1;
-                    liveTelemetry.value.rpm = lerp(13000, openF1TelemetryStream[0].rpm, returnFactor);
-                    liveTelemetry.value.speed = lerp(320, openF1TelemetryStream[0].speed, returnFactor);
+                    liveTelemetry.value.rpm   = lerp(13000, openF1TelemetryStream[0].rpm,   returnFactor);
+                    liveTelemetry.value.speed = lerp(320,   openF1TelemetryStream[0].speed, returnFactor);
                     liveTelemetry.value.n_gear = 2;
                 } else { isBooting.value = false; }
             } else {
@@ -115,34 +127,57 @@ const appLogic = {
                 liveTelemetry.value.rpm = lerp(currentRecord.rpm, nextRecord.rpm, interpolationFactor);
                 liveTelemetry.value.n_gear = interpolationFactor > 0.5 ? nextRecord.n_gear : currentRecord.n_gear;
             }
-            currentAngleRpm.value = lerp(currentAngleRpm.value, getTargetAngle(liveTelemetry.value.rpm, 13000), 0.12);
-            currentAngleSpeed.value = lerp(currentAngleSpeed.value, getTargetAngle(liveTelemetry.value.speed, 320), 0.12);
+            currentAngleRpm.value   = lerp(currentAngleRpm.value,   getTargetAngle(liveTelemetry.value.rpm,   13000), 0.18);
+            currentAngleSpeed.value = lerp(currentAngleSpeed.value,  getTargetAngle(liveTelemetry.value.speed, 320),   0.06);
             animationFrameId = requestAnimationFrame(loopTelemetriaHardware);
         };
 
-        watch(currentView, (newView) => {
-            if (newView === 'dinamica2') {
-                isBooting.value = true; bootProgress = 0; currentIndex = 0; interpolationFactor = 0;
-                currentAngleRpm.value = -135; currentAngleSpeed.value = -135;
-            }
-        });
-
         onMounted(() => {
-            recuperaDatiSimulatori();
             caricaNote();
+            isBooting.value = true;
+            bootProgress = 0;
+            currentIndex = 0;
+            interpolationFactor = 0;
+            currentAngleRpm.value = -135;
+            currentAngleSpeed.value = -135;
             animationFrameId = requestAnimationFrame(loopTelemetriaHardware);
         });
 
         onUnmounted(() => { if (animationFrameId) cancelAnimationFrame(animationFrameId); });
 
-        const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; };
-        const changeView = (view) => { currentView.value = view; isMenuOpen.value = false; };
-
         return {
-            currentView, isMenuOpen, simulatori, note, formNota, isEditing, liveTelemetry, isBooting,
-            currentAngleRpm, currentAngleSpeed, toggleMenu, changeView, salvaNota, eliminaNota, avviaModifica, annullaModifica
-        }
+            note, formNota, isEditing, liveTelemetry, isBooting,
+            currentAngleRpm, currentAngleSpeed,
+            salvaNota, eliminaNota, avviaModifica, annullaModifica
+        };
     }
 };
 
-Vue.createApp(appLogic).mount('#app');
+const routes = [
+    { path: '/',           component: PageWebSocket,  name: 'websocket'   },
+    { path: '/socketio',   component: PageSocketIo,   name: 'socketio'    },
+    { path: '/simulatori', component: PageSimulatori, name: 'simulatori'  },
+    { path: '/telemetria', component: PageTelemetria, name: 'telemetria'  },
+    { path: '/:pathMatch(.*)*', redirect: '/' }
+];
+
+const router = createRouter({
+    history: createWebHashHistory(),
+    routes
+});
+
+const appRoot = {
+    setup() {
+        const isMenuOpen = ref(false);
+        const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; };
+        const closeMenu  = () => { isMenuOpen.value = false; };
+        return { isMenuOpen, toggleMenu, closeMenu };
+    },
+    template: '#tpl-app-root'
+};
+
+Vue.createApp(appRoot)
+    .use(router)
+    .component('RouterView', RouterView)
+    .component('RouterLink', RouterLink)
+    .mount('#app');
