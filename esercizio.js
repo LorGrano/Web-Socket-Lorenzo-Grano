@@ -10,7 +10,7 @@ const PageSocketIo = {
 };
 
 const PageSimulatori = {
-    template: '#tpl-dinamica1',
+    template: '#tmpl-dinamica1',
     setup() {
         const simulatori = ref([]);
 
@@ -32,7 +32,7 @@ const PageSimulatori = {
 };
 
 const PageTelemetria = {
-    template: '#tpl-dinamica2',
+    template: '#tmpl-dinamica2',
     setup() {
         const note = ref([]);
         const formNota = ref({ id: null, simulatore: '', circuito: '', auto: '', tempoGiro: '', note: '' });
@@ -103,6 +103,16 @@ const PageTelemetria = {
         const getTargetAngle = (value, max) => -135 + (270 * Math.min(Math.max(value / max, 0), 1));
         const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
 
+        const SHIFT_DIP_POINT = 0.22;
+
+        const rpmDuranteCambioMarcia = (factor, fromRpm, toRpm) => {
+            const dipRpm = Math.min(fromRpm, toRpm) * 0.62;
+            if (factor < SHIFT_DIP_POINT) {
+                return lerp(fromRpm, dipRpm, factor / SHIFT_DIP_POINT);
+            }
+            return lerp(dipRpm, toRpm, (factor - SHIFT_DIP_POINT) / (1 - SHIFT_DIP_POINT));
+        };
+
         const loopTelemetriaHardware = () => {
             if (isBooting.value) {
                 if (bootProgress < 1) {
@@ -123,12 +133,18 @@ const PageTelemetria = {
                 const nextRecord = openF1TelemetryStream[nextIndex];
                 interpolationFactor += interpolationSpeed;
                 if (interpolationFactor >= 1) { interpolationFactor = 0; currentIndex = nextIndex; }
-                liveTelemetry.value.speed = lerp(currentRecord.speed, nextRecord.speed, interpolationFactor);
-                liveTelemetry.value.rpm = lerp(currentRecord.rpm, nextRecord.rpm, interpolationFactor);
-                liveTelemetry.value.n_gear = interpolationFactor > 0.5 ? nextRecord.n_gear : currentRecord.n_gear;
+                const cambiaMarcia = currentRecord.n_gear !== nextRecord.n_gear;
+                const targetRpm = cambiaMarcia
+                    ? rpmDuranteCambioMarcia(interpolationFactor, currentRecord.rpm, nextRecord.rpm)
+                    : lerp(currentRecord.rpm, nextRecord.rpm, interpolationFactor);
+                const targetSpeed = lerp(currentRecord.speed, nextRecord.speed, interpolationFactor);
+                liveTelemetry.value.rpm = lerp(liveTelemetry.value.rpm, targetRpm, 0.25);
+                liveTelemetry.value.speed = lerp(liveTelemetry.value.speed, targetSpeed, 0.05);
+                const sogliaCambio = cambiaMarcia ? SHIFT_DIP_POINT : 0.5;
+                liveTelemetry.value.n_gear = interpolationFactor > sogliaCambio ? nextRecord.n_gear : currentRecord.n_gear;
             }
-            currentAngleRpm.value   = lerp(currentAngleRpm.value,   getTargetAngle(liveTelemetry.value.rpm,   13000), 0.18);
-            currentAngleSpeed.value = lerp(currentAngleSpeed.value,  getTargetAngle(liveTelemetry.value.speed, 320),   0.06);
+            currentAngleRpm.value   = getTargetAngle(liveTelemetry.value.rpm,   13000);
+            currentAngleSpeed.value = getTargetAngle(liveTelemetry.value.speed, 320);
             animationFrameId = requestAnimationFrame(loopTelemetriaHardware);
         };
 
@@ -171,6 +187,12 @@ const appRoot = {
         const isMenuOpen = ref(false);
         const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; };
         const closeMenu  = () => { isMenuOpen.value = false; };
+
+        onMounted(() => {
+            const appEl = document.getElementById('app');
+            if (appEl) appEl.style.display = '';
+        });
+
         return { isMenuOpen, toggleMenu, closeMenu };
     },
     template: '#tpl-app-root'

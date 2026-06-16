@@ -6,7 +6,7 @@
     <title>Simulatori Live Hub - SPA Vue</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+    <script src="https://unpkg.com/vue-router@4"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -16,23 +16,46 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
     <style>
-        [v-cloak] { display: none !important; }
         button:focus-visible, input:focus-visible, textarea:focus-visible {
             outline: 2px solid #00f2fe; outline-offset: 2px;
         }
-        .nav-link        { @apply text-gray-400 hover:text-white pb-1 transition font-bold text-base; }
-        .router-link-active.nav-link { @apply text-neonCyan border-b-2 border-neonCyan; }
-        .mobile-nav-link { @apply text-gray-400 transition text-2xl font-bold; }
-        .router-link-active.mobile-nav-link { @apply text-neonCyan; }
+        
+        /* Convertito @apply in CSS standard per superare la validazione W3C ed eliminare i warning in VS Code */
+        .nav-link { 
+            color: #9ca3af; 
+            padding-bottom: 0.25rem; 
+            transition-property: all; 
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); 
+            transition-duration: 150ms; 
+            font-weight: 700; 
+            font-size: 1rem; 
+        }
+        .nav-link:hover { 
+            color: #ffffff; 
+        }
+        .router-link-active.nav-link { 
+            color: #00f2fe !important; 
+            border-bottom: 2px solid #00f2fe; 
+        }
+        
+        .mobile-nav-link { 
+            color: #9ca3af; 
+            transition-property: all; 
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); 
+            transition-duration: 150ms; 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+        }
+        .router-link-active.mobile-nav-link { 
+            color: #00f2fe !important; 
+        }
     </style>
 </head>
 <body class="bg-techBg text-gray-200 font-sans antialiased">
  
-    <div id="app" class="min-h-screen flex flex-col" v-cloak>
- 
-    </div>
+    <div id="app" class="min-h-screen flex flex-col" style="display:none"></div>
  
     <script type="text/x-template" id="tpl-app-root">
         <div class="min-h-screen flex flex-col">
@@ -93,7 +116,7 @@
                         Nel modello standard HTTP (basato su Request/Response), ogni singola transazione esige l'apertura di un canale che viene immediatamente chiuso al termine dello scambio, portando con sé un overhead immenso dovuto alle intestazioni (header) che pesano centinaia di byte per pacchetto. I WebSocket superano radicalmente questa inefficienza riducendo la dimensione dell'header del frame a una forbice minuscola che va da appena **2 a 14 byte**, consentendo uno streaming asincrono costante perfetto per dati fitti come la telemetria motoristica.
                     </p>
                     <p class="text-sm text-gray-400 leading-relaxed">
-                        Il tunnel poggia direttamente sullo strato di trasporto **TCP (Transmission Control Protocol)**. Il decollo della connessione avviene tramite una richiesta HTTP GET speciale definita **Handshake**. Il client invia una chiave pseudo-casuale cifrata a 16 byte convertita in Base64 all'interno dell'header <code class="text-neonCyan bg-gray-900 px-1.5 py-0.5 rounded font-mono text-xs">Sec-WebSocket-Key</code>.
+                        Il tunnel poggia direttamente sullo strato di trasporto **TCP (Transmission Control Protocol)**. Il decollo della connessione avviene tramite una richiesta HTTP GET speciale definita **Handshake**. Il client avvia la procedura inviando una chiave pseudo-casuale cifrata a 16 byte convertita in Base64 all'interno dell'header <code class="text-neonCyan bg-gray-900 px-1.5 py-0.5 rounded font-mono text-xs">Sec-WebSocket-Key</code>.
                     </p>
                     <p class="text-sm text-gray-400 leading-relaxed">
                         Questo valore viene ricevuto dal server e concatenato con un codice identificativo univoco standard (GUID). Il risultato viene passato alla funzione di hash SHA-1 e il suo digest viene codificato tramite Base64. La stringa ottenuta viene alla fine inserita nell'header della risposta <code class="text-neonCyan bg-gray-900 px-1.5 py-0.5 rounded font-mono text-sm">Sec-WebSocket-Accept</code> con un codice di stato **HTTP 101 Switching Protocols**.
@@ -131,7 +154,7 @@ Sec-WebSocket-Protocol: chat</pre>
             <hr class="border-gray-800 my-4">
  
             <h2 class="text-3xl font-extrabold text-white tracking-tight uppercase">Il Ciclo di Vita del Canale Asincrono</h2>
-            <p class="text-base text-gray-400 -mt-2">La gestione degli stati della connessione avviene tramite un'architettura event-driven guidata da quattro metodi di callback:</p>
+            <p class="text-base text-gray-400 -mt-2">La gestione degli states della connessione avviene tramite un'architettura event-driven guidata da quattro metodi di callback:</p>
  
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                 <div class="p-5 bg-cardBg rounded-2xl border border-gray-800 flex flex-col gap-3 shadow-xl">
@@ -189,7 +212,7 @@ Sec-WebSocket-Protocol: chat</pre>
                         Nonostante l'API WebSocket nativa sia uno strumento potente, lo sviluppo di applicazioni web in produzione si scontra spesso con i limiti fisici delle reti reali. Se un utente perde momentaneamente la connessione o naviga dietro un firewall aziendale rigido, il protocollo nativo interrompe la comunicazione senza fornire sistemi di recupero automatici.
                     </p>
                     <p class="text-sm text-gray-400 leading-relaxed">
-                        Socket.io nasce come una libreria di astrazione progettata per risolvere queste criticità, garantendo una comunicazione bidirezionale persistente, robusta e ad alta affidabilità tra client e server. È importante sottolineare che Socket.io non è un semplice wrapper di WebSocket, ma introduce un protocollo personalizzato arricchito da funzionalità avanzate.
+                        Socket.io nasce come una libreria di astrazione progettata per risolvere queste criticità, garantendo una comunicazione bidirezionale prima di tutto persistente, robusta e ad alta affidabilità tra client e server. È importante sottolineare che Socket.io non è un semplice wrapper di WebSocket, ma introduce un protocollo personalizzato arricchito da funzionalità avanzate.
                     </p>
                     <p class="text-sm text-gray-400 leading-relaxed">
                         La libreria poggia su un motore chiamato **Engine.io**, che gestisce la connessione a basso livello. Il punto di forza di questa architettura è che inverte l'approccio di decollo del canale: invece di tentare subito una connessione WebSocket rischiosa, Socket.io stabilisce immediatamente un canale sicuro via **HTTP Long-Polling** tradizionale.
@@ -208,7 +231,7 @@ Sec-WebSocket-Protocol: chat</pre>
                         </div>
                         <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
                             <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">2. Fallback HTTP Long-Polling (HTTP Long-Polling Fallback)</h3>
-                            <p class="text-xs md:text-sm text-gray-400 leading-relaxed">Alcuni ambienti di rete o vecchi proxy aziendali bloccano le connessioni WebSocket per motivi di sicurezza. Socket.io supera questo ostacolo avviando la connessione tramite una serie di richieste HTTP Long-Polling tradizionali, per poi tentare un aggiornamento al protocollo WebSocket.</p>
+                            <p class="text-xs md:text-sm text-gray-400 leading-relaxed">Alcuni environments di rete o vecchi proxy aziendali bloccano le connessioni WebSocket per motivi di sicurezza. Socket.io supera questo ostacolo avviando la connessione tramite una serie di richieste HTTP Long-Polling tradizionali, per poi tentare un aggiornamento al protocollo WebSocket.</p>
                         </div>
                         <div class="p-4 bg-cardBg rounded-xl border border-gray-800 flex flex-col gap-1 shadow-md">
                             <h3 class="text-sm font-bold text-neonBlue uppercase tracking-wider">3. Multiplexing, Namespaces e Stanze (Rooms)</h3>
@@ -220,7 +243,7 @@ Sec-WebSocket-Protocol: chat</pre>
         </section>
     </script>
  
-    <script type="text/x-template" id="tpl-dinamica1">
+    <script type="text/x-template" id="tmpl-dinamica1">
         <section class="flex flex-col gap-6 w-full" aria-label="Elenco dei simulatori attivi">
             <div>
                 <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Database JSON Unificato</h1>
@@ -276,7 +299,7 @@ Sec-WebSocket-Protocol: chat</pre>
         </section>
     </script>
  
-    <script type="text/x-template" id="tpl-dinamica2">
+    <script type="text/x-template" id="tmpl-dinamica2">
         <section class="flex flex-col gap-6 w-full" aria-label="Plancia note ingegneristiche">
             <div>
                 <h1 class="text-4xl md:text-5xl font-black text-neonCyan tracking-tight uppercase">Gestione Note Sessioni</h1>
