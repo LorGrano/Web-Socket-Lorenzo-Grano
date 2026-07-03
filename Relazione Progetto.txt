@@ -1,4 +1,4 @@
-L'idea del progetto nasce dall'esigenza di creare un "Live Hub" dedicato al mondo del motorsport digitale e della telemetria in tempo reale. Prima di scrivere anche una sola riga di codice, ho affrontato una fase di progettazione UX/UI focalizzandomi sullo studio di tre User Personas ben distinte, che rappresentano i target ideali del sito:
+iL'idea del progetto nasce dall'esigenza di creare un "Live Hub" dedicato al mondo del motorsport digitale e della telemetria in tempo reale. Prima di scrivere anche una sola riga di codice, ho affrontato una fase di progettazione UX/UI focalizzandomi sullo studio di tre User Personas ben distinte, che rappresentano i target ideali del sito:
 
 Andrea, un appassionato di motorsport che vuole iniziare la sua carriera nel sim-racing. Usa l'Hub per esplorare le specifiche dei videogiochi più popolari sul mercato e valutare con quale software fare il suo debutto.
 

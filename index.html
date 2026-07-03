@@ -4,9 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulatori Live Hub - SPA Vue</title>
+
+    <!-- Tailwind via CDN: niente build step, le classi di utilità vengono generate al volo nel browser -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 (build "global", espone l'oggetto window.Vue) -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Vue Router 4, compatibile con Vue 3 -->
     <script src="https://unpkg.com/vue-router@4"></script>
+
+    <!-- Estensione del tema Tailwind con i colori "neon" usati in tutta l'interfaccia -->
     <script>
         tailwind.config = {
             theme: {
@@ -18,8 +24,9 @@
     </script>
     <link rel="stylesheet" type="text/css" href="css/style.css">
     <style>
+        /* Outline ben visibile per l'accessibilità da tastiera (focus-visible) */
         button:focus-visible, input:focus-visible, textarea:focus-visible {
-            outline: 2px solid #00f2fe; outline-offset: 2px;
+            outline: 5px solid #00f2fe; outline-offset: 2px;
         }
         
         /* Convertito @apply in CSS standard per superare la validazione W3C ed eliminare i warning in VS Code */
@@ -35,6 +42,7 @@
         .nav-link:hover { 
             color: #ffffff; 
         }
+        /* Stile applicato automaticamente da Vue Router al link della rotta attiva */
         .router-link-active.nav-link { 
             color: #00f2fe !important; 
             border-bottom: 2px solid #00f2fe; 
@@ -54,9 +62,15 @@
     </style>
 </head>
 <body class="bg-techBg text-gray-200 font-sans antialiased">
- 
+
+    <!-- Punto di mount dell'app Vue. display:none finché il componente root
+         non è montato, per evitare di mostrare per un istante il markup grezzo
+         dei template (es. {{ mustache }} non ancora compilati) -->
     <div id="app" class="min-h-screen flex flex-col" style="display:none"></div>
- 
+
+    <!-- ===================== TEMPLATE COMPONENTE ROOT ===================== -->
+    <!-- Header con logo/menu desktop, hamburger mobile e <router-view> che
+         renderizza la pagina corrispondente alla rotta attiva -->
     <script type="text/x-template" id="tpl-app-root">
         <div class="min-h-screen flex flex-col">
  
@@ -66,13 +80,13 @@
                 </router-link>
  
                 <nav class="hidden md:flex items-center gap-8" role="navigation" aria-label="Menu principale desktop">
-                    <router-link to="/"           class="nav-link focus:outline-none">WebSocket</router-link>
-                    <router-link to="/socketio"   class="nav-link focus:outline-none">Socket.io</router-link>
-                    <router-link to="/simulatori" class="nav-link focus:outline-none">Esposizione JSON</router-link>
-                    <router-link to="/telemetria" class="nav-link focus:outline-none">Note &amp; Telemetria</router-link>
+                    <router-link to="/"           class="nav-link focus:outline:5px">WebSocket</router-link>
+                    <router-link to="/socketio"   class="nav-link focus:outline:5px">Socket.io</router-link>
+                    <router-link to="/simulatori" class="nav-link focus:outline:5px">Esposizione JSON</router-link>
+                    <router-link to="/telemetria" class="nav-link focus:outline:5px">Note &amp; Telemetria</router-link>
                 </nav>
  
-                <button @click="toggleMenu" class="md:hidden w-12 h-12 flex flex-col justify-center items-end gap-1.5 focus:outline-none z-50" aria-label="Apri menu mobile" :aria-expanded="isMenuOpen.toString()" aria-controls="mobile-menu">
+                <button @click="toggleMenu" class="md:hidden w-12 h-12 flex flex-col justify-center items-end gap-1.5 focus:outline:5px z-50" aria-label="Apri menu mobile" :aria-expanded="isMenuOpen.toString()" aria-controls="mobile-menu">
                     <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'rotate-45 translate-y-2.5 bg-neonCyan': isMenuOpen}"></span>
                     <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'opacity-0': isMenuOpen}"></span>
                     <span class="w-8 h-1 bg-gray-400 rounded transition-all duration-300" :class="{'-rotate-45 -translate-y-2.5 bg-neonCyan': isMenuOpen}"></span>
@@ -94,6 +108,9 @@
         </div>
     </script>
  
+    <!-- ===================== PAGINA 1: TEORIA WEBSOCKET ===================== -->
+    <!-- Componente puramente statico (PageWebSocket): solo testo informativo,
+         nessun dato reattivo da gestire -->
     <script type="text/x-template" id="tpl-statica1">
         <section class="flex flex-col gap-6 w-full">
             <div>
@@ -192,7 +209,10 @@ Sec-WebSocket-Protocol: chat</pre>
             </div>
         </section>
     </script>
- 
+
+    <!-- ===================== PAGINA 2: TEORIA SOCKET.IO ===================== -->
+    <!-- Anche questa è statica (PageSocketIo): testo che spiega i vantaggi
+         di Socket.io rispetto al WebSocket "nudo" -->
     <script type="text/x-template" id="tpl-statica2">
         <section class="flex flex-col gap-6 w-full">
             <div>
@@ -242,7 +262,10 @@ Sec-WebSocket-Protocol: chat</pre>
             </div>
         </section>
     </script>
- 
+
+    <!-- ===================== PAGINA 3: SIMULATORI (DATI DA JSON) ===================== -->
+    <!-- Template del componente PageSimulatori: il v-for su "simulatori" itera
+         sull'array popolato da fetch() in esercizio.js -->
     <script type="text/x-template" id="tmpl-dinamica1">
         <section class="flex flex-col gap-6 w-full" aria-label="Elenco dei simulatori attivi">
             <div>
@@ -298,7 +321,11 @@ Sec-WebSocket-Protocol: chat</pre>
             </div>
         </section>
     </script>
- 
+
+    <!-- ===================== PAGINA 4: NOTE + TELEMETRIA LIVE ===================== -->
+    <!-- Template del componente PageTelemetria: a sinistra il form CRUD per le
+         note (legato a formNota/isEditing), a destra il cruscotto animato
+         (rpm/velocità/marcia) e l'elenco delle note già salvate -->
     <script type="text/x-template" id="tmpl-dinamica2">
         <section class="flex flex-col gap-6 w-full" aria-label="Plancia note ingegneristiche">
             <div>
@@ -314,23 +341,35 @@ Sec-WebSocket-Protocol: chat</pre>
                     <div class="flex flex-col gap-4 text-sm font-medium">
                         <div class="flex flex-col gap-1.5">
                             <label id="lbl-sim" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Simulatore</label>
-                            <input v-model="formNota.simulatore" type="text" aria-labelledby="lbl-sim" placeholder="Es: ACC, iRacing" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
-                        </div>
+                        <div class="flex flex-col gap-1.5">  
+                                <select v-model="formNota.simulatore" aria-labelledby="lbl-sim" 
+                                class="bg-black/50 border border-gray-800 rounded-xl p-3.5 pr-10 text-base text-gray-200 focus:outline-none  focus:border-neonCyan transition appearance-none cursor-pointer bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%239ca3af%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414%2s%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[right_1rem_center] bg-no-repeat bg-[length:1.25rem_1.25rem]">
+
+                                <!-- Opzione segnaposto iniziale richiesta dalle buone pratiche di usabilità -->
+                                <option value="" disabled selected>Seleziona un simulatore...</option>
+                                
+                                <!-- Ciclo dinamico delle opzioni basato sull'array del componente -->
+                                <option v-for="sim in listaOpzioniSimulatori" :key="sim" :value="sim">
+                                    {{ sim }}
+                                </option>
+                            </select>
+                        </div>                       
+                     </div>
                         <div class="flex flex-col gap-1.5">
                             <label id="lbl-circ" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Circuito</label>
-                            <input v-model="formNota.circuito" type="text" aria-labelledby="lbl-circ" placeholder="Es: Vallelunga, Imola" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
+                            <input v-model="formNota.circuito" type="text" aria-labelledby="lbl-circ" placeholder="Es: Vallelunga, Imola" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline:5px focus:border-neonCyan transition">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label id="lbl-auto" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Auto Vettura</label>
-                            <input v-model="formNota.auto" type="text" aria-labelledby="lbl-auto" placeholder="Es: Mazda RX-7, BMW M4" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition">
+                            <input v-model="formNota.auto" type="text" aria-labelledby="lbl-auto" placeholder="Es: Mazda RX-7, BMW M4" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline:5px focus:border-neonCyan transition">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label id="lbl-tempo" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Tempo Giro</label>
-                            <input v-model="formNota.tempoGiro" type="text" aria-labelledby="lbl-tempo" placeholder="Es: 1:38:146" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan font-mono transition">
+                            <input v-model="formNota.tempoGiro" type="text" aria-labelledby="lbl-tempo" placeholder="Es: 1:38:146" class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline:5px focus:border-neonCyan font-mono transition">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label id="lbl-nota" class="text-gray-400 text-xs font-bold uppercase tracking-widest pl-0.5">Nota Tecnica</label>
-                            <textarea v-model="formNota.note" aria-labelledby="lbl-nota" rows="4" placeholder="Es: Problemi bloccaggio anteriore..." class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline-none focus:border-neonCyan transition"></textarea>
+                            <textarea v-model="formNota.note" aria-labelledby="lbl-nota" rows="4" placeholder="Es: Problemi bloccaggio anteriore..." class="bg-black/50 border border-gray-800 rounded-xl p-3.5 text-base text-gray-200 focus:outline:5px focus:border-neonCyan transition"></textarea>
                         </div>
                         <div class="flex gap-3 mt-3">
                             <button @click="salvaNota" class="flex-grow bg-gradient-to-r from-neonCyan to-neonBlue text-techBg font-black py-3.5 rounded-xl hover:brightness-110 transition uppercase text-sm tracking-widest shadow-md">
@@ -410,6 +449,9 @@ Sec-WebSocket-Protocol: chat</pre>
         </section>
     </script>
  
+    <!-- Logica applicativa (componenti, router, mount): caricata con "defer"
+         così viene eseguita solo dopo il parsing completo dell'HTML,
+         quando tutti i template (i blocchi text/x-template) sono già nel DOM -->
     <script src="esercizio.js" defer></script>
 </body>
 </html>
